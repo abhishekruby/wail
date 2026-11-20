@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wail · low-fidelity wireframes</title>
+<style>
+  :root { --bg:#0b0f0c; --ph:#7CFF9E; --dim:#3f7f52; --ember:#FFB347; --ink:#d9ffe4; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 32px; background: #111; color: var(--ink); font: 14px/1.4 ui-monospace, Menlo, Consolas, monospace; }
+  h1 { font-size: 20px; margin: 0 0 4px; color: var(--ph); }
+  p.lead { margin: 0 0 24px; color: #9bbfa6; }
+  .row { display: flex; flex-wrap: wrap; gap: 28px; }
+  .phone { width: 300px; height: 620px; background: var(--bg); border: 2px solid var(--dim); border-radius: 28px; padding: 18px 16px; display: flex; flex-direction: column; gap: 12px; position: relative; }
+  .phone h2 { font-size: 13px; margin: 0; color: var(--dim); text-transform: uppercase; letter-spacing: .08em; }
+  .bar { display: flex; justify-content: space-between; color: var(--dim); font-size: 12px; }
+  .title { font-size: 22px; color: var(--ph); font-weight: 700; }
+  .spec { height: 120px; border: 1px dashed var(--dim); border-radius: 8px; display: grid; place-items: center; color: var(--dim); position: relative; overflow: hidden; }
+  .spec svg { position: absolute; inset: 0; }
+  .btn { border: 2px solid var(--ph); border-radius: 8px; padding: 14px; text-align: center; font-weight: 700; color: var(--ph); }
+  .btn.ghost { border-color: var(--dim); color: var(--ink); font-weight: 400; }
+  .btn.warn { border-color: var(--ember); color: var(--ember); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .box { border: 1px solid var(--dim); border-radius: 8px; padding: 10px; }
+  .muted { color: #8aa894; font-size: 12px; }
+  .msg { border-left: 3px solid var(--ph); padding: 6px 10px; }
+  .msg.out { border-color: var(--dim); }
+  .chip { display: inline-block; border: 1px solid var(--dim); border-radius: 99px; padding: 1px 8px; font-size: 11px; color: var(--dim); }
+  .chip.lock { border-color: var(--ember); color: var(--ember); }
+  .dots span { display: inline-block; width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--ph); margin-right: 6px; }
+  .dots span.on { background: var(--ph); }
+  .toggle { display: flex; justify-content: space-between; align-items: center; }
+  .sw { width: 38px; height: 20px; border-radius: 99px; border: 1px solid var(--dim); position: relative; }
+  .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--dim); }
+  .sw.on { border-color: var(--ph); }
+  .sw.on::after { left: 20px; background: var(--ph); }
+  .nav { margin-top: auto; display: grid; grid-template-columns: repeat(4, 1fr); text-align: center; font-size: 11px; color: var(--dim); border-top: 1px solid var(--dim); padding-top: 10px; }
+  .nav b { color: var(--ph); font-weight: 400; }
+  textarea { width: 100%; height: 110px; background: transparent; border: 1px solid var(--dim); border-radius: 8px; color: var(--ink); font: inherit; padding: 8px; resize: none; }
+  .note { max-width: 300px; color: #9bbfa6; font-size: 12px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<h1>Wail · wireframes v1</h1>
+<p class="lead">Low fidelity. Layout and content only; final colours and effects follow 07-ux-design-and-wireframes.md.</p>
+
+<div class="row">
+
+  <div>
+    <div class="phone" aria-label="Séance screen">
+      <h2>1 · Séance (home)</h2>
+      <div class="bar"><span>✈ offline</span><span>mic: listening ●</span></div>
+      <div class="title">WAIL</div>
+      <div class="spec">
+        <svg viewBox="0 0 268 120" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="#7CFF9E" stroke-width="2" points="0,90 20,88 40,86 60,60 70,30 80,70 95,40 110,85 140,88 160,50 170,20 185,75 200,88 268,90"/></svg>
+      </div>
+      <div class="muted">Receiving… 3 of 5 frames</div>
+      <div class="dots"><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span></div>
+      <div class="two"><div class="btn">LISTEN</div><div class="btn">WAIL</div></div>
+      <div class="muted">Last messages</div>
+      <div class="msg">Shelter moved to Govt School, Ward 4 <span class="chip">notice</span></div>
+      <div class="msg out">Ambulance at gate 2 <span class="chip lock">locked</span></div>
+      <div class="nav"><b>Séance</b><span>Compose</span><span>Crypt</span><span>Altar</span></div>
+    </div>
+    <p class="note">The spectrogram is the hero. Listen and Wail are always one tap away.</p>
+  </div>
+
+  <div>
+    <div class="phone" aria-label="Compose screen">
+      <h2>2 · Compose</h2>
+      <div class="two"><div class="btn ghost">Text</div><div class="btn ghost">Card ▾</div></div>
+      <textarea aria-label="message">Meeting moved to 4 pm, Panchayat hall. Call Ravi 98xxxxxx21.</textarea>
+      <div class="muted">62 bytes · about 7 s per cycle</div>
+      <div class="box toggle"><span>Broadcast (repeat 3×)</span><span class="sw on"></span></div>
+      <div class="box toggle"><span>Lock with passphrase</span><span class="sw"></span></div>
+      <div class="btn">WAIL IT</div>
+      <div class="muted">Hold devices about 1 m apart, or use a loudspeaker.</div>
+      <div class="nav"><span>Séance</span><b>Compose</b><span>Crypt</span><span>Altar</span></div>
+    </div>
+    <p class="note">The byte counter and air-time estimate set expectations: Wail is for short text.</p>
+  </div>
+
+  <div>
+    <div class="phone" aria-label="Crypt screen">
+      <h2>3 · Crypt (history)</h2>
+      <div class="box"><div>⬇ Shelter moved to Govt School, Ward 4</div><div class="muted">received · 10:42 · <span class="chip">unverified sender</span></div></div>
+      <div class="box"><div>⬆ Ambulance at gate 2</div><div class="muted">sent · 10:31 · <span class="chip lock">locked</span></div></div>
+      <div class="box"><div>⬇ 📍 21.1702, 72.8311</div><div class="muted">received · 09:58 · location card</div></div>
+      <div class="box"><div>⬇ Locked message from the other side</div><div class="muted">received · 09:40 · enter passphrase</div></div>
+      <div class="nav"><span>Séance</span><span>Compose</span><b>Crypt</b><span>Altar</span></div>
+    </div>
+    <p class="note">Status chips make locked and unverified messages obvious at a glance.</p>
+  </div>
+
+  <div>
+    <div class="phone" aria-label="Altar screen">
+      <h2>4 · Altar (settings)</h2>
+      <div class="box toggle"><span>Calm mode</span><span class="sw"></span></div>
+      <div class="box">Speed: normal / <b>fast</b></div>
+      <div class="box">Volume ▮▮▮▮▮▮▯▯</div>
+      <div class="btn ghost">Run self-test</div>
+      <div class="muted">Plays a test frame and listens for it. Last result: 19/20 at 1 m.</div>
+      <div class="btn warn">Clear history</div>
+      <div class="muted">Built on ggwave (MIT). No servers, no tracking.</div>
+      <div class="nav"><span>Séance</span><span>Compose</span><span>Crypt</span><b>Altar</b></div>
+    </div>
+    <p class="note">Self-test doubles as the diagnostics log for the README results table.</p>
+  </div>
+
+</div>
+</body>
+</html>

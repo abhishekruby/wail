@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+*.log
+.env
+.env.*
+.DS_Store
+.vscode/
+.idea/
+# Never ignore .kiro/ (hackathon rule)
+.claude/

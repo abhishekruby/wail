@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wail · kill test</title>
+    <style>
+      body { background: #0b0f0c; color: #d9ffe4; font: 16px/1.5 ui-monospace, monospace; margin: 0; padding: 16px; }
+      h1 { color: #7CFF9E; font-size: 20px; }
+      button, select, input { font: inherit; background: transparent; color: #7CFF9E; border: 2px solid #7CFF9E; border-radius: 8px; padding: 10px 14px; margin: 4px 4px 4px 0; }
+      input { width: 6em; }
+      #tally { font-size: 22px; color: #7CFF9E; margin: 12px 0; }
+      #log { white-space: pre-wrap; font-size: 13px; color: #9bbfa6; border-top: 1px solid #3f7f52; padding-top: 8px; }
+    </style>
+  </head>
+  <body>
+    <h1>Wail kill test</h1>
+    <p>Open this page on two devices. One listens, the other sends. Write the tally into docs/field-tests.md.</p>
+    <div>
+      <label>Speed <select id="proto">
+        <option value="GGWAVE_PROTOCOL_AUDIBLE_NORMAL">normal</option>
+        <option value="GGWAVE_PROTOCOL_AUDIBLE_FAST" selected>fast</option>
+        <option value="GGWAVE_PROTOCOL_AUDIBLE_FASTEST">fastest</option>
+      </select></label>
+      <label>Bytes <input id="len" type="number" min="4" max="140" value="100" /></label>
+      <label>Tries <input id="tries" type="number" min="1" max="50" value="10" /></label>
+    </div>
+    <div>
+      <button id="listen">Listen</button>
+      <button id="send">Send tries</button>
+      <button id="reset">Reset tally</button>
+    </div>
+    <div id="tally">received OK: 0 · damaged: 0 · sent: 0</div>
+    <div id="log"></div>
+    <script type="module" src="./kill-test.ts"></script>
+  </body>
+</html>
