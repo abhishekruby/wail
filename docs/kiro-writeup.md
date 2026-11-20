@@ -34,3 +34,7 @@ During development (Kiro):
 | --- | --- | --- | --- |
 
 ## Kiro powers and third-party tools
+
+## Work done outside Kiro (disclosure)
+
+Before Kiro credits arrived (Nov 20, 2026): planning docs in `docs/planning/`, first drafts of `.kiro/steering/`, the lab baseline test, the kill-test spike, and two research pieces in `docs/research/` (a phone-codec simulation and an outside review of the plan) were prepared with Claude and Gemini (Antigravity). None of it is product code. Everything in `src/` is built through Kiro specs; any exception is listed here.

@@ -80,6 +80,8 @@ Lab result with this design at FAST speed: 4 of 585 pattern frames failed with t
 - **Broadcast carousel (v1 default).** Play the manifest and all data frames, then repeat the cycle 3 times. Receivers collect until every `seq` has arrived. No back channel, unlimited listeners.
 - **Duplex repair (stretch).** The receiver plays a repair-request frame listing missing seq numbers; the sender replays only those.
 
+- **Call mode (candidate, see 04-prd.md).** Same frames, sent with ggwave's low-frequency `DT_FASTEST` protocol (1.08 to 2.63 kHz) at volume 50, which fits inside a phone call's 300 to 3,400 Hz band. About 9.8 s per 100 B. Lab codec results: `docs/research/codec-sim.md`.
+
 **Air time (lab, Nov 20):** a 100-character text is one manifest frame plus one data frame, about 9 s per cycle at FAST and about 5 s at FASTEST. Broadcast repeats 3 cycles. A 500-character notice is 5 data frames, about 40 s per cycle at FAST, which is why v1 stays short.
 
 ## Data design (on the device)
@@ -88,7 +90,7 @@ IndexedDB database `wail`, version 1:
 
 | Store | Key | Fields | Notes |
 | --- | --- | --- | --- |
-| messages | id (UUID) | direction, kind, body (JSON), locked, status, created_at, air_time_ms, frame_count | Index on created_at |
+| messages | id (UUID) | direction, kind, body (JSON), locked, locked_payload (bytes, kept until unlocked), status, created_at, air_time_ms, frame_count | Index on created_at. `locked_payload` holds the received ciphertext with its salt and IV so R7's unlock-later works |
 | transfers | message_id | total_frames, received (seq list), frames (seq → bytes), first_seen_at, last_seen_at | Deleted on success or 10 min after the last frame |
 | settings | key | value | Volume, speed, calm mode. Never the passphrase |
 | diagnostics | auto id | run_at, channel, distance_label, attempts, successes, avg_snr | Field-test log |

@@ -6,11 +6,13 @@ Stage status: ready (Nov 20, 2026). Estimates are focused hours. Internal submit
 
 - [x] T0.1 Register for Kiroween and request Kiro credits (done Nov 20; waiting for the Didit ID-check email)
 - [x] T0.2 India eligibility checked against the excluded list (Nov 20)
-- [ ] T0.3 Move `docs/setup/ci.yml` to `.github/workflows/ci.yml`, create GitHub repos `wail` and `wail-nightwatch`, make the first commit and push · 0.5 h
-- [ ] T0.4 `npm install`, `npm run dev`, open on laptop and phone over HTTPS · 0.75 h
-- [ ] T0.5 Kill test page: ggwave hello world, send 100 bytes 10× each over air (1 m, 3 m), Bluetooth speaker, WhatsApp call, normal call; record results in `docs/field-tests.md` · 2 h
+- [x] T0.3 CI moved to `.github/workflows/ci.yml`; public repo https://github.com/abhishekruby/wail created, first commit pushed, CI green (Nov 20). `wail-nightwatch` repo is created in T1.9.
+- [ ] T0.4 `npm install`, `npm run dev`, open on laptop and phone over HTTPS · 0.75 h (install, typecheck and tests done Nov 20; phone open pending)
+- [x] T0.4b Offline codec simulation of phone calls (Antigravity, verified by Claude Code re-run): `docs/research/codec-sim.md` (Nov 20)
+- [x] T0.4c Judge-style review of the plan (Antigravity): `docs/research/judge-review.md`; accepted changes applied to 01, 02, 04, 06, 07, 09, 10 (Nov 20)
+- [ ] T0.5 Kill test page: send 100 bytes 10× each over air (1 m, 3 m), Bluetooth speaker, WhatsApp call, normal call; record results in `docs/field-tests.md` · 2 h. Run the two call rows twice: AUDIBLE_FAST, then DT_FASTEST at volume 50.
 - [ ] T0.6 Confirm the 140-byte limit on real devices (already measured in the lab on Nov 20); keep `MAX_FRAME = 128` · 0.5 h
-- [ ] T0.7 Decision: is phone-call transfer in or out of scope? Note it in 04-prd.md · 0.25 h
+- [ ] T0.7 Decision: is call mode in v1? Apply the rule in 04-prd.md §2 (≥ 7/10 on a call row with DT_FASTEST) and note the result there · 0.25 h
 
 ## Phase 1 · Nov 22 to 24 · Modem, protocol, property tests (≈ 14 h)
 
@@ -22,12 +24,16 @@ Stage status: ready (Nov 20, 2026). Estimates are focused hours. Internal submit
 - [ ] T1.6 Run spec 01 tasks: `GgwaveModem`, `PassthroughModem`, mic worklet, playback · 3.5 h
 - [ ] T1.7 Property tests P1 to P6 green; Node noise suite with SNR levels · 2 h
 - [ ] T1.8 Create the Kiro hooks (see table below) in the Kiro UI · 0.5 h
+- [ ] T1.9 Start `wail-nightwatch` early (moved from Phase 4): create the repo, build it in Kiro Crew on the KiroCrew app kit (https://github.com/kirodotdev/KiroCrew), and schedule its first nightly run by Nov 24 so ≥ 5 nightly runs exist before submission · 3 h
+- [ ] T1.10 Create one Kiro custom agent, a "protocol auditor" that reviews changes in `src/protocol/` and `src/modem/` against `.kiro/steering/protocol.md` and the CRC rules; record what it caught for the write-up · 1 h
+- [ ] T1.11 Try at least one Kiro Power relevant to the stack (testing, accessibility or web performance) and note in `docs/kiro-writeup.md` what it changed · 0.5 h
 
 ## Phase 2 · Nov 25 to 27 · Haunted UI and storage (≈ 13 h)
 
 - [ ] T2.1 In Kiro: specs 04-cards, 06-storage, 08-haunted-ui · 1.5 h
-- [ ] T2.2 Theme tokens, fonts (self-hosted), calm mode · 1.5 h
-- [ ] T2.3 Séance screen with live spectrogram and chunk dots · 3 h
+- [ ] T2.2 Theme tokens, fonts (self-hosted), calm mode · 1.5 h (first update `.kiro/steering/haunted-ui.md`: `--phosphor-dim` → `#56a86e`; plain-word subtitles under spooky nav labels)
+- [ ] T2.3 Séance screen with live waterfall spectrogram and chunk dots · 3 h
+- [ ] T2.3b Solo demo "Try it on this device" (R14): built-in sample recording decoded through the real decoder, no mic · 1 h
 - [ ] T2.4 Compose screen with byte counter, card picker, toggles · 2.5 h
 - [ ] T2.5 Crypt and Altar screens, self-test · 2 h
 - [ ] T2.6 IndexedDB stores and history · 1.5 h
@@ -44,10 +50,10 @@ Stage status: ready (Nov 20, 2026). Estimates are focused hours. Internal submit
 
 ## Phase 4 · Nov 30 to Dec 1 · Crew app and field tests (≈ 10 h)
 
-- [ ] T4.1 `wail-nightwatch`: Python noise generator + decoder + JSON report · 3 h
-- [ ] T4.2 Package as a Kiro Crew app with a small report panel; schedule nightly · 2 h
-- [ ] T4.3 Field tests from the matrix in 06-architecture.md (Testing strategy) · 3 h
-- [ ] T4.4 README results table, credits, setup steps · 1 h
+- [ ] T4.1 `wail-nightwatch`: add the codec channels from `docs/research/codec-sim.md` to its nightly run, plus a trend panel across all nights so far · 2 h
+- [ ] T4.2 (moved to T1.9)
+- [ ] T4.3 Field tests from the matrix in 06-architecture.md (Testing strategy), including the 3-receiver broadcast row · 3 h
+- [ ] T4.4 README results table, credits, prior art (Nedagram, Waver, ggwave), setup steps · 1 h
 - [ ] T4.5 Freeze checklist (04-prd.md §7) all ticked → **feature freeze** · 1 h
 
 ## Phase 5 · Dec 2 to 3 · Submission (≈ 10 h)
@@ -72,4 +78,13 @@ Create these in the Kiro UI so the JSON format matches your Kiro version. They t
 
 ## Totals
 
-About 61 focused hours across 13 days, so roughly 4.5 h a day plus buffer.
+About 66 focused hours across 13 days, so roughly 5 h a day plus buffer (Nov 20 revision added T1.9 to T1.11 and T2.3b, and moved Crew work earlier).
+
+## Who does what
+
+| Who | Work |
+| --- | --- |
+| Kiro | All product code in `src/`, specs, hooks, custom agent, Crew app. This is what judges score. |
+| Claude Code (lead) | Planning, reviews of Kiro output, debugging, tests, git, CI, deploy, field-test logging, write-up, prompts for Antigravity |
+| Antigravity | Non-product work only: `spikes/`, `docs/research/`, drafts. Never `src/` or `.kiro/` |
+| Abhishek | Real-device tests, voiceover, the social post in his own words, final submission |

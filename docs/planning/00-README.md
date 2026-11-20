@@ -15,4 +15,6 @@ Everything decided before development starts, in the order it was done. Read top
 | 09 | Task breakdown | [09-task-breakdown.md](09-task-breakdown.md) | Ready |
 | 10 | Submission plan | [10-submission-plan.md](10-submission-plan.md) | Ready |
 
+**Revised Nov 20** after two outside checks in [`docs/research/`](../research/): an offline phone-codec simulation and a judge-style review. Main changes: broadcast is the headline, Nedagram is named as prior art, a solo demo and a call-mode decision rule were added, the dim text colour was fixed, and the Crew app starts earlier.
+
 **Next step:** Phase 0 in 09-task-breakdown.md, starting with the kill test on Nov 21.

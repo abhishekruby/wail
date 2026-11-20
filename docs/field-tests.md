@@ -35,17 +35,32 @@ Findings:
 
 The cliff sits between −5 and −10 dB. Real rooms add echo, speaker distortion and mic processing, so field results will be worse than this. That is what the field tests below measure.
 
+## Codec simulation (Nov 20, 2026, offline, no speaker or microphone)
+
+100-byte payloads, 10 per cell, ggwave volume 10, through ffmpeg 6.1.1 codecs. Written by Antigravity (`spikes/codec-sim/run.ts`), re-run independently by Claude Code with identical results in all 42 cells. Full report: `docs/research/codec-sim.md`.
+
+| Protocol | Air time | AMR-NB 12.2k / 4.75k (2G/3G call) | AMR-WB 23.85k / 12.65k (VoLTE) | Opus 16k / 32k (WhatsApp-like) |
+| --- | --- | --- | --- | --- |
+| AUDIBLE_FAST | 6.83 s | 0/10 · 0/10 | 10/10 · 10/10 | 10/10 · 10/10 |
+| AUDIBLE_FASTEST | 3.75 s | 0/10 · 0/10 | 10/10 · 10/10 | 10/10 · 10/10 |
+| DT_FASTEST | 9.83 s | 10/10 · 10/10 | 10/10 · 0/10 | 10/10 · 10/10 |
+| DT_FASTEST, volume 50 | 9.83 s | 10/10 · 10/10 | 10/10 · 10/10 | 10/10 · 10/10 |
+
+The volume-50 row was also re-run by Claude Code (`node --experimental-strip-types spikes/codec-sim/run.ts 50`) with the same result. Real calls add noise suppression, voice detection and gain control, which this does not model.
+
 ## Kill test (Nov 21): fill in
 
-100-byte message, 10 tries each, FAST protocol unless noted.
+100-byte message, 10 tries each, FAST protocol at volume 10 unless noted. Run each call row twice: once at FAST, once with "call mode (DT fastest)" at volume 50.
 
-| Date | Sender | Receiver | Channel | Distance | Successes / tries | Notes |
-| --- | --- | --- | --- | --- | --- | --- |
-| | Laptop | iQOO Neo 6 | Air | 1 m | /10 | |
-| | Laptop | iQOO Neo 6 | Air | 3 m | /10 | |
-| | iQOO Neo 6 | Laptop | Bluetooth speaker | 3 m | /10 | |
-| | iQOO Neo 6 | Vivo P27 | WhatsApp call | n/a | /10 | |
-| | iQOO Neo 6 | Vivo P27 | Normal call | n/a | /10 | |
+| Date | Sender | Receiver | Channel | Distance | Protocol, volume | Successes / tries | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| | Laptop | iQOO Neo 6 | Air | 1 m | FAST, 10 | /10 | |
+| | Laptop | iQOO Neo 6 | Air | 3 m | FAST, 10 | /10 | |
+| | iQOO Neo 6 | Laptop | Bluetooth speaker | 3 m | FAST, 10 | /10 | |
+| | iQOO Neo 6 | Vivo P27 | WhatsApp call | n/a | FAST, 10 | /10 | |
+| | iQOO Neo 6 | Vivo P27 | WhatsApp call | n/a | DT_FASTEST, 50 | /10 | |
+| | iQOO Neo 6 | Vivo P27 | Normal call | n/a | FAST, 10 | /10 | |
+| | iQOO Neo 6 | Vivo P27 | Normal call | n/a | DT_FASTEST, 50 | /10 | |
 
 ## Field tests (Nov 30 to Dec 1): fill in
 

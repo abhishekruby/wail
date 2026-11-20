@@ -30,10 +30,13 @@ $('listen').onclick = async () => {
     const res = gg.decode(inst, new Int8Array(samples.buffer));
     if (!res || res.length === 0) return;
     const bytes = new Uint8Array(res); // copy out of WASM memory
+    // Length must match too: a truncated payload with a valid pattern is still a failure.
+    const want = Number($<HTMLInputElement>('len').value);
     const r = checkPayload(bytes);
-    r.ok ? ok++ : bad++;
+    const good = r.ok && bytes.length === want;
+    good ? ok++ : bad++;
     tally();
-    log(r.ok ? `OK  #${r.seq} (${bytes.length} B)` : `DAMAGED (${bytes.length} B)`);
+    log(good ? `OK  #${r.seq} (${bytes.length} B)` : `DAMAGED #${r.seq} (${bytes.length} of ${want} B)`);
   };
   src.connect(proc);
   proc.connect(ctx.destination);
@@ -41,8 +44,8 @@ $('listen').onclick = async () => {
   log('listening');
 };
 
-function play(bytes: Uint8Array, protocol: GgwaveProtocol): Promise<void> {
-  const wav = new Int8Array(gg.encode(inst, bytes, protocol, 10)); // copy before next call
+function play(bytes: Uint8Array, protocol: GgwaveProtocol, volume: number): Promise<void> {
+  const wav = new Int8Array(gg.encode(inst, bytes, protocol, volume)); // copy before next call
   const f32 = new Float32Array(wav.buffer);
   const buf = ctx.createBuffer(1, f32.length, ctx.sampleRate);
   buf.getChannelData(0).set(f32);
@@ -60,9 +63,11 @@ $('send').onclick = async () => {
   const protocol = gg.ProtocolId[$<HTMLSelectElement>('proto').value as keyof typeof gg.ProtocolId];
   const len = Math.min(140, Math.max(4, Number($<HTMLInputElement>('len').value)));
   const tries = Number($<HTMLInputElement>('tries').value);
+  const volume = Math.min(100, Math.max(1, Number($<HTMLInputElement>('vol').value)));
+  log(`sending ${tries} × ${len} B, ${$<HTMLSelectElement>('proto').value.replace('GGWAVE_PROTOCOL_', '')}, volume ${volume}`);
   for (let i = 0; i < tries; i++) {
     const seq = sent + 1;
-    await play(testPayload(seq, len), protocol);
+    await play(testPayload(seq, len), protocol, volume);
     sent++;
     tally();
     log(`sent #${seq} (${len} B)`);
