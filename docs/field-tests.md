@@ -48,6 +48,17 @@ The cliff sits between −5 and −10 dB. Real rooms add echo, speaker distortio
 
 The volume-50 row was also re-run by Claude Code (`node --experimental-strip-types spikes/codec-sim/run.ts 50`) with the same result. Real calls add noise suppression, voice detection and gain control, which this does not model.
 
+## Broadcast and room-echo simulation (Nov 20, 2026, offline)
+
+5 frames × 100 B, 3 cycles, +10 dB white noise, synthetic room echo, 300 ms gaps. Written by Antigravity (`spikes/carousel-sim/run.ts`), re-run by Claude Code. Full report: `docs/research/carousel-sim.md`.
+
+| Finding | Result |
+| --- | --- |
+| Late joiners (20 random start points in cycle 1, no echo) | 20/20 had all 5 frames by end of cycle 2, at gaps of 0, 100, 300 and 600 ms |
+| Listener joins mid-frame | 79/79 recovered that frame on the next cycle |
+| Wrong bytes | 0 in every run |
+| Echo limit (5 simulated rooms; mean frames out of 5) | FASTEST: 5.0 at RT60 0.2 s, 3.6 at 0.5 s · FAST: 5.0 up to 0.8 s, 1.6 at 1.0 s · NORMAL: 5.0 up to 1.0 s, 2.8 at 1.2 s |
+
 ## Kill test (Nov 21): fill in
 
 100-byte message, 10 tries each, FAST protocol at volume 10 unless noted. Run each call row twice: once at FAST, once with "call mode (DT fastest)" at volume 50.

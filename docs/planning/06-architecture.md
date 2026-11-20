@@ -78,6 +78,8 @@ Lab result with this design at FAST speed: 4 of 585 pattern frames failed with t
 ## Transfer modes
 
 - **Broadcast carousel (v1 default).** Play the manifest and all data frames, then repeat the cycle 3 times. Receivers collect until every `seq` has arrived. No back channel, unlimited listeners.
+  - Simulation (`docs/research/carousel-sim.md`, Nov 20): a listener who joins anywhere in cycle 1, even mid-frame, had every frame by the end of cycle 2 (79/79 mid-frame joins), with 0 wrong bytes. Gaps of 0 to 600 ms all worked; keep 300 ms for real speakers and mic gain.
+  - Room echo: FAST was clean up to RT60 0.8 s and NORMAL up to 1.0 s; **FASTEST already failed at 0.5 s**, so FASTEST is never used for room broadcast. In a very echoey hall, extra cycles don't help a phone stuck in an echo null; moving the phone 15 to 30 cm or switching to NORMAL does.
 - **Duplex repair (stretch).** The receiver plays a repair-request frame listing missing seq numbers; the sender replays only those.
 
 - **Call mode (candidate, see 04-prd.md).** Same frames, sent with ggwave's low-frequency `DT_FASTEST` protocol (1.08 to 2.63 kHz) at volume 50, which fits inside a phone call's 300 to 3,400 Hz band. About 9.8 s per 100 B. Lab codec results: `docs/research/codec-sim.md`.

@@ -56,6 +56,7 @@ Every nav label shows the plain word under the spooky one (for example "Crypt" w
 | Listening, nothing heard | Flat trace, "Listening… hold the devices closer or turn the volume up" |
 | Receiving | Chunk dots: 3 of 5, live |
 | Checksum failed | Nothing shown; "Heard something, but it was damaged. Waiting for the repeat." |
+| Same frames keep failing after a full cycle | "Still missing part 3 of 5. Move this phone a little (a hand's width) or ask the sender to use Normal speed." (echo nulls don't move with time, only with position; `docs/research/carousel-sim.md`) |
 | Offline first load failed | "Open Wail once with internet so it can work offline later." |
 
 ## Accessibility
