@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wail · radio check</title>
+    <style>
+      body { background: #0b0f0c; color: #d9ffe4; font: 16px/1.5 ui-monospace, monospace; margin: 0; padding: 16px; }
+      h1 { color: #7CFF9E; font-size: 20px; }
+      button, select, textarea { font: inherit; background: transparent; color: #7CFF9E; border: 2px solid #7CFF9E; border-radius: 8px; padding: 10px 14px; margin: 4px 4px 4px 0; }
+      textarea { width: 100%; box-sizing: border-box; min-height: 4em; }
+      #got { font-size: 18px; color: #7CFF9E; white-space: pre-wrap; margin: 12px 0; }
+      #log { white-space: pre-wrap; font-size: 13px; color: #9bbfa6; border-top: 1px solid #56a86e; padding-top: 8px; }
+    </style>
+  </head>
+  <body>
+    <h1>Wail radio check</h1>
+    <p>Throwaway test page (spike). It runs the real product code: protocol, modem and audio. Open it on two devices: Listen on one, Send on the other.</p>
+    <textarea id="msg">Shelter moved to Govt School, Ward 4. Water and ORS at gate 2.</textarea>
+    <div>
+      <label>Speed <select id="speed"><option value="fast" selected>fast</option><option value="normal">normal</option></select></label>
+      <button id="listen">Listen</button>
+      <button id="send">Send (3 cycles)</button>
+    </div>
+    <div id="got"></div>
+    <div id="log"></div>
+    <script type="module" src="./radio-check.ts"></script>
+  </body>
+</html>
