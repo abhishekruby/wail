@@ -2,6 +2,33 @@
 
 Stage status: ready (Nov 20, 2026). Estimates are focused hours. Internal submit deadline: **Dec 3, 11:00 PM IST**. Official deadline: Dec 4, 2:00 PM PT = Dec 5, 3:30 AM IST.
 
+## Revised schedule (Nov 25): 9 days left, credits not yet received
+
+Status on Nov 25: ID check passed (Devpost page: "allow 3 business days"), no credit code yet; reminder email drafted. Kiro account is on Kiro Free (0 / 50 credits, resets Dec 1); the code goes in **Settings → Account & plan → Promo code**. Kiro IDE not yet installed. Kill test not yet run. Phase 1 is 3 days late.
+
+**The rule that doesn't change:** product code in `src/` is built in Kiro only. If credits run short we cut scope; we don't move product code to Gemini or Claude Code, because that risks disqualification.
+
+| Day | Kiro (product) | Abhishek | Gemini / Antigravity | Claude Code |
+| --- | --- | --- | --- | --- |
+| Wed Nov 25 | Install IDE, sign in, check steering; spec 02 requirements + design (free credits) | Install Kiro; send credit email; kill test | Assets (Task E), submission drafts (Task F) | Review spec 02 before each approval |
+| Thu Nov 26 | Spec 02 tasks; spec 03 crypto | Kill test if not done | Review Kiro's protocol code vs steering | Run tests, review, commit |
+| Fri Nov 27 | Spec 01 modem core; hooks; custom agent | Phone test of first send/receive | Second review | Field-log, CI |
+| Sat Nov 28 | Specs 04 cards + 08 UI: Séance, Compose, solo demo | Real-device check | Accessibility check of the UI | Review, fix-plans for Kiro |
+| Sun Nov 29 | Broadcast carousel (05), history (06) | Broadcast test with 3 phones | | Deploy to Vercel |
+| Mon Nov 30 | PWA offline (07), polish; Crew app only if credits came by Nov 27 | | | Offline test, Lighthouse |
+| Tue Dec 1 | Bug fixes only | Field tests (matrix in 06) | Fill README results | **Feature freeze** |
+| Wed Dec 2 | | Record video, voiceover | Captions, thumbnail | Kiro write-up, edit check |
+| Thu Dec 3 | | Social post (own words), submit by 11 PM IST | | Check every link in a private window |
+
+**If the code arrives by Nov 27:** follow the table; add the Crew app (T1.9) and call mode if the kill test passed.
+
+**If no code by Nov 30:** finish only the must-haves below on the free credits (50 now, 50 more on Dec 1). Buying a Kiro Pro plan is Abhishek's own decision; the plan page lists it at $20/month with 500 trial credits on first upgrade.
+
+**Scope priority if credits are short:**
+1. Must: broadcast of text + notice card, CRC-checked receive, solo demo, haunted Séance screen, offline PWA, live URL, video.
+2. Should: locked messages, location and contact cards, history (Crypt).
+3. Could: call mode, Kiro Crew app (`wail-nightwatch`), waterfall spectrogram (fall back to a simple level meter).
+
 ## Phase 0 · Nov 21 · Setup and kill test (≈ 5 h)
 
 - [x] T0.1 Register for Kiroween and request Kiro credits (done Nov 20; waiting for the Didit ID-check email)
