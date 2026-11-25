@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1000" viewBox="0 0 1500 1000">
+  <defs>
+    <pattern id="dpScan" width="1500" height="6" patternUnits="userSpaceOnUse">
+      <rect width="1500" height="1.5" fill="#7CFF9E" fill-opacity="0.05" />
+    </pattern>
+    <radialGradient id="dpGlow" cx="20%" cy="32%" r="34%">
+      <stop offset="0%" stop-color="#7CFF9E" stop-opacity="0.15" />
+      <stop offset="70%" stop-color="#56a86e" stop-opacity="0.04" />
+      <stop offset="100%" stop-color="#0b0f0c" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="dpGhostFill" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#d9ffe4" />
+      <stop offset="30%" stop-color="#7CFF9E" />
+      <stop offset="100%" stop-color="#7CFF9E" />
+    </linearGradient>
+    <filter id="dpBlur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="7" result="b" />
+      <feMerge>
+        <feMergeNode in="b" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <clipPath id="dpGhostClip">
+      <path d="M 152 224 C 152 142, 196 96, 256 96 C 316 96, 360 142, 360 224 L 368 376 C 350 404, 330 404, 314 376 C 298 348, 276 348, 256 384 C 236 348, 214 348, 198 376 C 182 404, 162 404, 144 376 Z" />
+    </clipPath>
+  </defs>
+
+  <!-- Base background -->
+  <rect width="1500" height="1000" fill="#0b0f0c" />
+  <rect width="1500" height="1000" fill="url(#dpGlow)" />
+
+  <!-- Outer CRT terminal frame -->
+  <rect x="44" y="44" width="1412" height="912" rx="16" fill="#0b0f0c" stroke="#56a86e" stroke-width="2.5" />
+  <line x1="44" y1="106" x2="1456" y2="106" stroke="#56a86e" stroke-width="2" />
+
+  <!-- Top status bar -->
+  <g font-family="ui-monospace, 'Cascadia Mono', 'Liberation Mono', Menlo, Monaco, Consolas, monospace" font-size="20">
+    <circle cx="84" cy="75" r="7" fill="#7CFF9E" />
+    <text x="106" y="82" fill="#7CFF9E" font-weight="700">WAIL // ACOUSTIC BROADCAST MODEM</text>
+    <text x="1420" y="82" fill="#FFB347" text-anchor="end">KIROWEEN 2026 · RESURRECTION</text>
+  </g>
+
+  <!-- Hero left: Wail spectrogram-ghost icon -->
+  <g transform="translate(96, 152) scale(0.68)">
+    <g fill="none" stroke-linecap="round" filter="url(#dpBlur)">
+      <path d="M 92 164 A 180 180 0 0 0 92 332" stroke="#56a86e" stroke-width="13" />
+      <path d="M 420 164 A 180 180 0 0 1 420 332" stroke="#56a86e" stroke-width="13" />
+      <path d="M 122 188 A 142 142 0 0 0 122 308" stroke="#7CFF9E" stroke-width="15" />
+      <path d="M 390 188 A 142 142 0 0 1 390 308" stroke="#7CFF9E" stroke-width="15" />
+    </g>
+    <g filter="url(#dpBlur)">
+      <g clip-path="url(#dpGhostClip)">
+        <rect x="140" y="92" width="232" height="320" fill="url(#dpGhostFill)" />
+        <g fill="#0b0f0c" fill-opacity="0.82">
+          <rect x="140" y="116" width="232" height="5" />
+          <rect x="140" y="140" width="232" height="5" />
+          <rect x="140" y="164" width="232" height="5" />
+          <rect x="140" y="240" width="232" height="5" />
+          <rect x="140" y="316" width="232" height="5" />
+          <rect x="140" y="340" width="232" height="5" />
+          <rect x="140" y="364" width="232" height="5" />
+        </g>
+      </g>
+    </g>
+    <ellipse cx="216" cy="204" rx="18" ry="23" fill="#0b0f0c" />
+    <ellipse cx="296" cy="204" rx="18" ry="23" fill="#0b0f0c" />
+    <ellipse cx="256" cy="274" rx="23" ry="31" fill="#0b0f0c" />
+    <ellipse cx="256" cy="274" rx="10" ry="14" fill="none" stroke="#56a86e" stroke-width="4" />
+  </g>
+
+  <!-- Hero right: Title and pitch -->
+  <g font-family="ui-monospace, 'Cascadia Mono', 'Liberation Mono', Menlo, Monaco, Consolas, monospace">
+    <text x="492" y="284" font-size="136" font-weight="700" letter-spacing="10" fill="#7CFF9E">WAIL</text>
+
+    <text x="492" y="366" font-size="36" fill="#d9ffe4">
+      <tspan x="492" dy="0">Broadcast a message to every phone</tspan>
+      <tspan x="492" dy="52">in the room. <tspan fill="#7CFF9E" font-weight="700">No internet.</tspan></tspan>
+    </text>
+
+    <text x="492" y="484" font-size="22" fill="#56a86e">The dial-up modem died in the 2000s. We dug it up.</text>
+  </g>
+
+  <!-- Divider -->
+  <line x1="88" y1="548" x2="1412" y2="548" stroke="#56a86e" stroke-width="1.5" stroke-dasharray="8 8" />
+
+  <!-- Lower 3-stage architecture / live transmission showcase -->
+  <g font-family="ui-monospace, 'Cascadia Mono', 'Liberation Mono', Menlo, Monaco, Consolas, monospace">
+    <!-- Panel 1: Sender -->
+    <rect x="88" y="586" width="396" height="316" rx="10" fill="#0b0f0c" stroke="#56a86e" stroke-width="2" />
+    <text x="116" y="628" font-size="18" font-weight="700" fill="#FFB347">01 · SENDER + LOUDSPEAKER</text>
+    <line x1="88" y1="648" x2="484" y2="648" stroke="#56a86e" stroke-width="1" />
+    <text x="116" y="694" font-size="22" fill="#d9ffe4">
+      <tspan x="116" dy="0">"Shelter moved to Govt</tspan>
+      <tspan x="116" dy="34">School, Ward 4."</tspan>
+    </text>
+    <text x="116" y="784" font-size="18" fill="#56a86e">
+      <tspan x="116" dy="0">MODE:   BROADCAST (3x)</tspan>
+      <tspan x="116" dy="28">SEAL:   WHITENED + CRC-16</tspan>
+      <tspan x="116" dy="28">LOCK:   AES-GCM OPTIONAL</tspan>
+    </text>
+
+    <!-- Panel 2: Waterfall Spectrogram -->
+    <rect x="514" y="586" width="472" height="316" rx="10" fill="#0b0f0c" stroke="#7CFF9E" stroke-width="2" />
+    <text x="542" y="628" font-size="18" font-weight="700" fill="#7CFF9E">02 · SOUND IN THE AIR</text>
+    <text x="958" y="628" font-size="16" fill="#FFB347" text-anchor="end">1.9-6.3 kHz</text>
+    <line x1="514" y1="648" x2="986" y2="648" stroke="#56a86e" stroke-width="1" />
+
+    <!-- Amber band brackets -->
+    <path d="M 548 674 L 536 674 L 536 828 L 548 828" fill="none" stroke="#FFB347" stroke-width="2.5" />
+    <path d="M 952 674 L 964 674 L 964 828 L 952 828" fill="none" stroke="#FFB347" stroke-width="2.5" />
+
+    <!-- Waterfall FSK tone blocks -->
+    <g>
+      <rect x="556" y="790" width="32" height="14" rx="2" fill="#56a86e" />
+      <rect x="598" y="742" width="32" height="14" rx="2" fill="#7CFF9E" />
+      <rect x="598" y="806" width="32" height="10" rx="2" fill="#56a86e" />
+      <rect x="640" y="694" width="32" height="14" rx="2" fill="#7CFF9E" />
+      <rect x="682" y="766" width="32" height="14" rx="2" fill="#7CFF9E" />
+      <rect x="724" y="718" width="32" height="14" rx="2" fill="#56a86e" />
+      <rect x="724" y="794" width="32" height="14" rx="2" fill="#7CFF9E" />
+      <rect x="766" y="684" width="32" height="14" rx="2" fill="#7CFF9E" />
+      <rect x="808" y="750" width="32" height="14" rx="2" fill="#7CFF9E" />
+      <rect x="850" y="706" width="32" height="14" rx="2" fill="#56a86e" />
+      <rect x="850" y="782" width="32" height="12" rx="2" fill="#7CFF9E" />
+      <rect x="892" y="730" width="46" height="14" rx="2" fill="#7CFF9E" />
+    </g>
+    <text x="750" y="874" font-size="17" fill="#56a86e" text-anchor="middle">FSK TONES + REED-SOLOMON ECC</text>
+
+    <!-- Panel 3: Receivers -->
+    <rect x="1016" y="586" width="396" height="316" rx="10" fill="#0b0f0c" stroke="#56a86e" stroke-width="2" />
+    <text x="1044" y="628" font-size="18" font-weight="700" fill="#7CFF9E">03 · EVERY PHONE IN EARSHOT</text>
+    <line x1="1016" y1="648" x2="1412" y2="648" stroke="#56a86e" stroke-width="1" />
+
+    <!-- 5/5 chunk dots -->
+    <g transform="translate(1044, 680)">
+      <circle cx="10"  cy="10" r="9" fill="#7CFF9E" />
+      <circle cx="38"  cy="10" r="9" fill="#7CFF9E" />
+      <circle cx="66"  cy="10" r="9" fill="#7CFF9E" />
+      <circle cx="94"  cy="10" r="9" fill="#7CFF9E" />
+      <circle cx="122" cy="10" r="9" fill="#7CFF9E" />
+      <text x="148" y="16" font-size="18" fill="#7CFF9E" font-weight="700">5/5 FRAMES</text>
+    </g>
+
+    <text x="1044" y="746" font-size="22" fill="#d9ffe4">
+      <tspan x="1044" dy="0">"Shelter moved to Govt</tspan>
+      <tspan x="1044" dy="34">School, Ward 4."</tspan>
+    </text>
+    <text x="1044" y="840" font-size="18" fill="#7CFF9E" font-weight="700">CRC-32 EXACT · SAVED OFFLINE</text>
+    <text x="1044" y="872" font-size="16" fill="#56a86e">NO INTERNET · NO PAIRING · NO SERVER</text>
+  </g>
+
+  <!-- Subtle 6% CRT scanlines -->
+  <rect width="1500" height="1000" fill="url(#dpScan)" pointer-events="none" />
+</svg>

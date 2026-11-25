@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="6" fill="#0b0f0c" />
+  <!-- Simplified broadcast arcs for 16-32 px -->
+  <path d="M 6.2 11.5 A 9.5 9.5 0 0 0 6.2 20.5" fill="none" stroke="#7CFF9E" stroke-width="2.2" stroke-linecap="round" />
+  <path d="M 25.8 11.5 A 9.5 9.5 0 0 1 25.8 20.5" fill="none" stroke="#7CFF9E" stroke-width="2.2" stroke-linecap="round" />
+  <!-- Bold solid phosphor ghost with W-wave hem -->
+  <path d="M 9.5 14 C 9.5 8.5, 12.3 5.5, 16 5.5 C 19.7 5.5, 22.5 8.5, 22.5 14 L 23 24.5 C 21.8 26.5, 20.4 26.5, 19.4 24.5 C 18.4 22.7, 17.2 22.7, 16 25 C 14.8 22.7, 13.6 22.7, 12.6 24.5 C 11.6 26.5, 10.2 26.5, 9 24.5 Z" fill="#7CFF9E" />
+  <!-- Crisp eyes and wailing mouth -->
+  <circle cx="13.5" cy="13" r="1.6" fill="#0b0f0c" />
+  <circle cx="18.5" cy="13" r="1.6" fill="#0b0f0c" />
+  <ellipse cx="16" cy="18" rx="1.8" ry="2.4" fill="#0b0f0c" />
+</svg>
