@@ -357,6 +357,87 @@ ggwave's protocol ID (e.g., `GGWAVE_PROTOCOL_AUDIBLE_NORMAL` vs. `GGWAVE_PROTOCO
 
 ---
 
+## Audio I/O (`src/audio/`)
+
+The audio layer manages browser Web Audio APIs for microphone capture and speaker playback. It is split into six thin modules:
+
+1. **audio-context.ts**: Shared `AudioContext` singleton, requested at 48 kHz.
+2. **mic-worklet.ts**: AudioWorkletProcessor that posts microphone samples to the main thread.
+3. **mic-capture.ts**: Starts the mic capture chain (getUserMedia → AudioWorkletNode → onmessage).
+4. **playback.ts**: Plays a Float32Array via AudioBufferSourceNode with per-frame timing.
+5. **analyser.ts**: Creates an AnalyserNode for spectrum display (not used by the modem).
+6. **index.ts**: Barrel re-exporting the public API.
+
+The layer is intentionally thin — it bridges browser APIs and delegates all audio processing logic to the protocol and modem layers. No audio processing happens on the main thread.
+
+### Architecture
+
+```
+┌────────────────────────────────────────────┐
+│          src/audio/                        │
+│                                            │
+│  audio-context.ts   getAudioContext()      │
+│                     resumeAudio()          │
+│                                            │
+│  mic-worklet.ts     AudioWorkletProcessor  │
+│                     (register 'wail-mic')  │
+│                                            │
+│  mic-capture.ts     startMic(ctx, onBlock) │
+│                     → { stop() }           │
+│                                            │
+│  playback.ts        playSamples(ctx, samples)
+│                     → Promise<void>        │
+│                                            │
+│  analyser.ts        createAnalyser(ctx, source)
+│                     → { node, read }       │
+│                                            │
+│  index.ts           public API barrel      │
+└────────────────────────────────────────────┘
+         ↓ used by
+  src/app/           (send/listen state machine)
+  src/ui/            (Séance, Compose, Crypt screens)
+         ↓ uses
+  src/modem/         (GgwaveModem.create)
+  Web Audio API      (AudioContext, getUserMedia, AudioWorklet)
+```
+
+**Dependency rule**: `src/audio/` imports from `src/modem/` and uses native Web Audio APIs only. It does not import from `src/protocol/`, `src/app/`, `src/ui/`, or `src/store/`.
+
+### Key design decisions
+
+**Single AudioContext per page**: One `AudioContext` is created on first call to `getAudioContext()` and cached. The app layer reads `ctx.sampleRate` after resuming audio (a user tap) and passes it to `GgwaveModem.create()`.
+
+**Mic runs in AudioWorklet**: The microphone callback (getUserMedia MediaStreamSource) is connected to an AudioWorkletNode named 'wail-mic'. The worklet copies each 128-sample block to the main thread via `postMessage`. This keeps audio processing off the render thread and allows the app layer to decode frames asynchronously.
+
+**Errors are semantic**: `getUserMedia` errors (NotAllowedError, NotFoundError, NotReadableError) are caught and rethrown as `MicError` with a code ('denied', 'no-mic', 'busy', 'unknown') so the UI can show human-readable messages.
+
+**Playback timing**: Each encoded frame is played as a separate AudioBufferSourceNode connected to ctx.destination. The app layer waits for `onended` before playing the next frame, allowing a 300 ms gap between frames without blocking.
+
+**Mic stop is explicit**: When leaving the Listen screen, the app layer calls `micCapture.stop()`, which disconnects both the MediaStreamSource and AudioWorkletNode, clears the message listener, and stops every track (R10).
+
+**Volume is not audio-layer concern**: Volume for playback is set via modem config (1–100 scale passed to ggwave). The audio layer just plays whatever Float32Array it receives.
+
+### Microphone constraints
+
+```ts
+{
+  audio: {
+    echoCancellation: false,
+    noiseSuppression: false,
+    autoGainControl: false,
+    channelCount: 1,
+  }
+}
+```
+
+Voice processing (echo cancellation, noise suppression, AGC) destroys the acoustic modem tones. These constraints must be explicit (not omitted), so the browser does not apply voice processing by default on some platforms.
+
+### Sample rate handling
+
+iOS may return 44,100 Hz instead of 48,000 Hz, even after requesting 48,000. The app layer must always read `ctx.sampleRate` after resuming audio and pass it to `GgwaveModem.create()`. The modem layer will handle the actual sample rate correctly.
+
+---
+
 ## Testing Strategy
 
 ### No browser tests

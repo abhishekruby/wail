@@ -169,6 +169,65 @@ Implements the modem-core layer: a type-safe interface to encode frames as audio
 - [x] 5. Final checkpoint — Ensure all tests pass
   - Run `npx vitest run tests/modem/` with 60s timeout and confirm no failures. All tests (unit + property) should pass before marking this spec complete.
 
+- [x] 6. Implement Audio I/O (`src/audio/`)
+  - [x] 6.1 Create `src/audio/audio-context.ts`
+    - Export `getAudioContext(): AudioContext` that returns a singleton AudioContext, requesting `{ sampleRate: 48000 }`
+    - Export `resumeAudio(): Promise<void>` that calls `ctx.resume()` (must be called from a user tap to comply with autoplay rules)
+    - Callers must read `ctx.sampleRate` after resuming (iOS may give 44,100) and pass it to `GgwaveModem.create()`
+    - _Requirements: 10.1_
+
+  - [x] 6.2 Create `src/audio/mic-worklet.ts`
+    - Define an AudioWorkletProcessor named 'wail-mic' (register with `registerProcessor('wail-mic', WailMicProcessor)`)
+    - TypeScript DOM lib lacks worklet globals; declare at the top:
+      - `declare abstract class AudioWorkletProcessor { readonly port: MessagePort; abstract process(inputs: Float32Array[][], outputs: Float32Array[][], parameters: Record<string, Float32Array>): boolean; }`
+      - `declare function registerProcessor(name: string, ctor: new () => AudioWorkletProcessor): void;`
+      - `export {};` (makes this a module)
+    - In `process(inputs, outputs, parameters)`:
+      - Copy `inputs[0]![0]` (128 Float32 samples; the browser reuses the buffer) with `new Float32Array(...)`
+      - Post with `this.port.postMessage(copy, [copy.buffer]); return true;`
+    - _Requirements: 10.1, 10.2_
+
+  - [x] 6.3 Create `src/audio/mic-capture.ts`
+    - Define `MicError` with code property: `code: 'denied' | 'no-mic' | 'busy' | 'unknown'`
+    - Define `MicCapture` type as `{ stop(): void }`
+    - Export `startMic(ctx: AudioContext, onBlock: (samples: Float32Array) => void): Promise<MicCapture>`
+    - Load worklet: `import workletUrl from './mic-worklet.ts?worker&url';` then `ctx.audioWorklet.addModule(workletUrl);`
+    - Call `navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 1 } })`
+    - Create `MediaStreamAudioSourceNode` and `AudioWorkletNode('wail-mic')`
+    - Connect: `source → workletNode` (do NOT connect workletNode to ctx.destination to avoid echoing the mic)
+    - Set `port.onmessage = (event) => onBlock(event.data as Float32Array)`
+    - Return `{ stop() { workletNode.disconnect(); sourceNode.disconnect(); port.onmessage = null; for (const track of stream.getAudioTracks()) track.stop(); } }`
+    - Catch getUserMedia errors and rethrow as MicError:
+      - `NotAllowedError` → `code: 'denied'`
+      - `NotFoundError` → `code: 'no-mic'`
+      - `NotReadableError` → `code: 'busy'`
+      - Other → `code: 'unknown'`
+    - _Requirements: 10.1, 10.2, 10.3_
+
+  - [x] 6.4 Create `src/audio/playback.ts`
+    - Export `playSamples(ctx: AudioContext, samples: Float32Array): Promise<void>`
+    - Create `AudioBuffer` of 1 channel at `ctx.sampleRate` with `samples.length` frames
+    - Copy samples into buffer: `buffer.getChannelData(0).set(samples)`
+    - Create `AudioBufferSourceNode` and connect to `ctx.destination`
+    - Resolve promise on `'ended'` event
+    - _Requirements: 10.1_
+
+  - [x] 6.5 Create `src/audio/analyser.ts`
+    - Export `createAnalyser(ctx: AudioContext, source: AudioNode): { node: AnalyserNode; read(into: Uint8Array): void }`
+    - Create AnalyserNode with `fftSize: 2048, smoothingTimeConstant: 0`
+    - Connect source → analyser → ctx.destination
+    - Return object with `node` and `read(into)` function that calls `analyser.getByteFrequencyData(into)`
+    - _Requirements: 10.1_
+
+  - [x] 6.6 Create `src/audio/index.ts`
+    - Barrel re-export (use `export type` for types):
+      - `export { getAudioContext, resumeAudio } from './audio-context.js'`
+      - `export { startMic } from './mic-capture.js'`
+      - `export type { MicError, MicCapture } from './mic-capture.js'`
+      - `export { playSamples } from './playback.js'`
+      - `export { createAnalyser } from './analyser.js'`
+    - _Requirements: 10.1_
+
 ## Notes
 
 - Tasks are **required** for the spec to be complete (no '*' optional markers)
@@ -180,6 +239,9 @@ Implements the modem-core layer: a type-safe interface to encode frames as audio
 - PassthroughModem uses byte-to-sample conversion (sample i = byte i / 255) for simple round-trip; `feed` decodes using `decodeFrame` from `src/protocol/`
 - Float32 ↔ Int8 conversion is bit-reinterpretation (IEEE 754 byte representation), not numeric division
 - Default config speed is 'fast' (steering protocol.md requirement)
+- Audio I/O layer must NOT be tested in Node; these are thin browser-only files
+- Microphone capture runs in an AudioWorklet to keep processing off the main render thread
+- Volume for playback comes from modem config (1–100), passed to ggwave.encode()
 
 ## Task Dependency Graph
 
@@ -194,7 +256,10 @@ Implements the modem-core layer: a type-safe interface to encode frames as audio
     { "id": 5, "tasks": ["3.2", "3.3", "3.4"] },
     { "id": 6, "tasks": ["4.1"] },
     { "id": 7, "tasks": ["4.2"] },
-    { "id": 8, "tasks": ["5"] }
+    { "id": 8, "tasks": ["5"] },
+    { "id": 9, "tasks": ["6.1"] },
+    { "id": 10, "tasks": ["6.2", "6.3", "6.4", "6.5"] },
+    { "id": 11, "tasks": ["6.6"] }
   ]
 }
 ```

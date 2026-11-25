@@ -183,19 +183,15 @@ export class GgwaveModem implements Modem {
     while (this.pending.length >= this.chunkBytes) {
       const chunk = this.pending.subarray(0, this.chunkBytes);
 
-      // Decode the chunk. If a frame is complete, ggwave returns it; otherwise, it returns empty.
-      // ggwave buffers state internally, so we may decode multiple frames from one chunk or
-      // none until the next chunk completes a frame.
-      let result = this.gg.decode(this.inst, chunk);
+      // Decode the chunk exactly once. If a frame is complete, ggwave returns it;
+      // otherwise, it returns empty.
+      const result = this.gg.decode(this.inst, chunk);
 
-      // Loop to collect all frames ready after feeding this chunk
-      while (result && result.length > 0) {
-        // WASM memory discipline: copy the result immediately before the next ggwave call.
+      // If a frame was decoded, copy it and add to frames.
+      // WASM memory discipline: copy the result immediately before the next ggwave call.
+      if (result && result.length > 0) {
         const decoded = new Uint8Array(result);
         frames.push(decoded);
-
-        // Check if another frame is ready (ggwave's internal buffer may have more data)
-        result = this.gg.decode(this.inst, new Int8Array(0));
       }
 
       // Remove the processed chunk from pending
