@@ -168,14 +168,14 @@ Implements the pure-TypeScript packet protocol layer: constants, whitening, CRC 
   - No implementation logic in this file
   - _Requirements: 1.1, 1.2_
 
-- [ ] 11. Write unit tests `tests/protocol/protocol.test.ts`
-  - [ ] 11.1 Write example-based unit tests for constants, whitening, CRC utilities
+- [x] 11. Write unit tests `tests/protocol/protocol.test.ts`
+  - [x] 11.1 Write example-based unit tests for constants, whitening, CRC utilities
     - Verify `MAX_FRAME === 128` and `MIN_FRAME === 12`
     - Verify `crc16` and `crc32` return known-correct values for a fixed input (use a reference vector, e.g. `crc16(Uint8Array.from([0x57]))`)
     - Verify `whiten` reference output matches the vector in `tests/ggwave-baseline.test.ts`
     - _Requirements: 1.1, 1.2, 2.6_
 
-  - [ ] 11.2 Write example-based unit tests for frame encoder and decoder
+  - [x] 11.2 Write example-based unit tests for frame encoder and decoder
     - Verify encoder produces the exact byte sequence expected by the reference whitening algorithm
     - Verify `decodeFrame` returns `null` for a manifest frame with `seq ≠ 0`
     - Verify `decodeFrame` returns `null` for a data frame with `seq === 0`
@@ -184,18 +184,18 @@ Implements the pure-TypeScript packet protocol layer: constants, whitening, CRC 
     - Verify `resaltFrame` produces byte 0 equal to the new salt and decodes to the same fields as the original
     - _Requirements: 2.3, 2.4, 3.3, 3.4, 3.7_
 
-  - [ ] 11.3 Write example-based unit tests for manifest parser and splitter
+  - [x] 11.3 Write example-based unit tests for manifest parser and splitter
     - Verify `parseManifest` returns `{ ok: false, error: 'too-short' }` for a byte array shorter than 9 bytes
     - Verify `parseManifest` returns `{ ok: false, error: 'unknown-kind' }` for `kind = 5`
     - Verify `splitPayload` returns `{ ok: false, error: 'payload-too-large' }` for a payload requiring 256 chunks (> 255 × 120 bytes)
     - _Requirements: 4.5, 8.4_
 
-  - [ ] 11.4 Write example-based unit tests for reassembler and replay guard
+  - [x] 11.4 Write example-based unit tests for reassembler and replay guard
     - Verify a known-good frame set round-trips to exact payload bytes
     - Verify `createReassembler` with injected clock returns `{ status: 'replayed' }` on second delivery
     - _Requirements: 5.4, 7.1, 7.2_
 
-- [ ] 12. Final checkpoint — Ensure all tests pass
+- [x] 12. Final checkpoint — Ensure all tests pass
   - Run `npx vitest run tests/protocol/` and confirm all implementation tasks and optional tests pass. Ask the user if any test fails.
 
 ## Notes

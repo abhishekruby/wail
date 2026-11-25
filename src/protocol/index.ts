@@ -1,4 +1,4 @@
-export { MAX_FRAME, MIN_FRAME } from './constants.js';
+export { MAX_FRAME, MIN_FRAME, FRAME_TYPE_MANIFEST, FRAME_TYPE_DATA, FRAME_TYPE_REPAIR_REQUEST } from './constants.js';
 export { whiten } from './whiten.js';
 export { crc16 } from './crc16.js';
 export { crc32 } from './crc32.js';
