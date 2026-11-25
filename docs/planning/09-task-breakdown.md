@@ -14,7 +14,7 @@ Status on Nov 25: ID check passed (Devpost page: "allow 3 business days"), no cr
 | Thu Nov 26 | Spec 02 tasks; spec 03 crypto | Kill test if not done | Review Kiro's protocol code vs steering | Run tests, review, commit |
 | Fri Nov 27 | Spec 01 modem core; hooks; custom agent | Phone test of first send/receive | Second review | Field-log, CI |
 | Sat Nov 28 | Specs 04 cards + 08 UI: Séance, Compose, solo demo | Real-device check | Accessibility check of the UI | Review, fix-plans for Kiro |
-| Sun Nov 29 | Broadcast carousel (05), history (06) | Broadcast test with 3 phones | | Deploy to Vercel |
+| Sun Nov 29 | Broadcast carousel + Relay (05), history (06), Groups (09) | Broadcast test with 3 phones; relay chain across 2 rooms | | Deploy to Vercel |
 | Mon Nov 30 | PWA offline (07), polish; Crew app only if credits came by Nov 27 | | | Offline test, Lighthouse |
 | Tue Dec 1 | Bug fixes only | Field tests (matrix in 06) | Fill README results | **Feature freeze** |
 | Wed Dec 2 | | Record video, voiceover | Captions, thumbnail | Kiro write-up, edit check |
@@ -24,9 +24,11 @@ Status on Nov 25: ID check passed (Devpost page: "allow 3 business days"), no cr
 
 **If no code by Nov 30:** finish only the must-haves below on the free credits (50 now, 50 more on Dec 1). Buying a Kiro Pro plan is Abhishek's own decision; the plan page lists it at $20/month with 500 trial credits on first upgrade.
 
+**Added Nov 25: Relay (R16) and Groups (R17).** The radio-check test showed that sound alone covers about one room, so the headline becomes "the message travels": relay hops, plus calls and walkie-talkies as bridges. Both are small on top of what is built: Relay reuses `splitPayload` (it already takes `messageId`) plus a hop field; Groups reuse spec 03 lock/unlock. Kiro prompts 6 to 8 in `docs/kiro-prompts.md`.
+
 **Scope priority if credits are short:**
-1. Must: broadcast of text + notice card, CRC-checked receive, solo demo, haunted Séance screen, offline PWA, live URL, video.
-2. Should: locked messages, location and contact cards, history (Crypt).
+1. Must: broadcast of text + notice card, CRC-checked receive, **Relay with hop count**, solo demo, haunted Séance screen, offline PWA, live URL, video.
+2. Should: **Groups** (locked messages with a chat thread per group), location and contact cards, history (Crypt).
 3. Could: call mode, Kiro Crew app (`wail-nightwatch`), waterfall spectrogram (fall back to a simple level meter).
 
 ## Phase 0 · Nov 21 · Setup and kill test (≈ 5 h)
@@ -74,6 +76,9 @@ Status on Nov 25: ID check passed (Devpost page: "allow 3 business days"), no cr
 - [ ] T3.4 PWA: manifest, icons, precache, offline reload test · 2 h
 - [ ] T3.5 CSP header, Vercel deploy, HTTPS check on phone · 1.5 h
 - [ ] T3.6 Accessibility pass: contrast, focus, reduced motion · 1 h
+- [ ] T3.7 In Kiro: update spec 02 with the hop field (prompt 6), then Relay in spec 05 (prompt 7) · 2 h
+- [ ] T3.8 In Kiro: spec 09-groups (prompt 8): group store, unlock once per session, thread view · 2.5 h
+- [ ] T3.9 Relay chain test: 2 rooms, then a hop into a phone call; walkie-talkie row only if bought · 1 h
 
 ## Phase 4 · Nov 30 to Dec 1 · Crew app and field tests (≈ 10 h)
 

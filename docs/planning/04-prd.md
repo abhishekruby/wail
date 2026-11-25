@@ -1,12 +1,18 @@
 # 04 · Product requirements (PRD)
 
-Stage status: done (Nov 20, 2026) · Owner: Abhishek · Version 1.1 (Nov 20: broadcast made the headline, solo demo added, call mode rule added, after `docs/research/judge-review.md` and `docs/research/codec-sim.md`)
+Stage status: done (Nov 20, 2026) · Owner: Abhishek · Version 1.2 (Nov 25: Relay and Groups added so a message travels beyond one room; v1.1 Nov 20: broadcast made the headline, solo demo added, call mode rule added, after `docs/research/judge-review.md` and `docs/research/codec-sim.md`)
 
 ## 1. Summary
 
 Wail is an offline web app that broadcasts short messages, contact cards, locations and notices as sound, from one device to every device in earshot. Category for Kiroween 2026: **Resurrection**.
 
 **What sets it apart.** One-to-one text over sound already exists (Nedagram, Waver). Wail's headline is **one-to-many broadcast**: one phone on a loudspeaker, a room of receivers, and late joiners still get the whole message on a later cycle. It carries structured crisis cards for non-technical people and publishes measured reliability.
+
+**How a message travels beyond one room.** Sound alone covers a room or a hall. Wail goes further in two ways:
+- **Relay:** any phone that received a message can play it again with one tap. The message hops phone to phone and room to room, exactly as sent, and the screen shows the hop count. A relay phone carries a locked message without being able to read it.
+- **Any voice channel is a bridge:** a phone call (any distance, even 2G with no data), a walkie-talkie (kilometres, no towers), a PA or community radio. Wail turns each into a channel for exact text.
+
+**Groups** make it feel like a chat: a group is a name and a shared passphrase. Everyone in earshot hears the sound, but only members can read it, and each group has its own thread.
 
 ## 2. Goals
 
@@ -18,7 +24,9 @@ Wail is an offline web app that broadcasts short messages, contact cards, locati
 4. Optional lock with a spoken passphrase; a locked message stays in history and can be unlocked later.
 5. Fully offline after first load (installable PWA).
 6. Haunted modem UI with a live waterfall spectrogram, chunk progress and a calm mode.
-7. **Solo demo:** a judge alone on one laptop can tap "Try it on this device" on the home screen and watch a built-in sample decode through the real decoder, with no second device and no microphone.
+7. **Relay (R16):** one tap re-broadcasts a received message, locked or not, with its hop count raised by one.
+8. **Groups (R17):** named groups with a shared passphrase and a chat-style thread per group.
+9. **Solo demo:** a judge alone on one laptop can tap "Try it on this device" on the home screen and watch a built-in sample decode through the real decoder, with no second device and no microphone.
 
 **Call mode: promote to v1 if the Nov 21 kill test passes**
 
@@ -33,7 +41,7 @@ Wail is an offline web app that broadcasts short messages, contact cards, locati
 - Files up to 2 KB.
 - A single-file HTML build that can be shared offline over Bluetooth (to verify: mic access from a local file).
 
-**Non-goals:** images, video, accounts, a server, multi-hop mesh, ultrasound.
+**Non-goals:** images, video, accounts, a server, automatic mesh routing (relays are a human tap, so two phones never talk over each other), Bluetooth or Wi-Fi mesh (browsers can't do phone-to-phone radio), ultrasound.
 
 ## 3. Success metrics
 
@@ -45,6 +53,7 @@ Wail is an offline web app that broadcasts short messages, contact cards, locati
 | Property-based cases per property per CI run | ≥ 1,000 |
 | Broadcast: receivers in one room completing the same message | 3 devices, ≥ 8 of 10 cycles each, 3 m from the speaker |
 | Solo demo: home screen to decoded sample on one laptop | < 15 s |
+| Relay chain: message exact after 3 hops (room → next room → phone call or walkie-talkie) | ≥ 8 of 10 |
 | Kiro Crew nightly torture runs before submission | ≥ 5 (first run by Nov 24, T1.9) |
 
 ## 4. Functional requirements (EARS)
@@ -67,6 +76,8 @@ Each ID becomes one Kiro spec. Kiro turns EARS acceptance criteria into property
 | R12 | WHEN a message arrives, THE SYSTEM SHALL also vibrate (where supported) and show it as text. | 08-haunted-ui |
 | R13 | IF the same message_id was already completed in the last 10 minutes, THEN THE SYSTEM SHALL not show it again. | 02-packet-protocol |
 | R14 | WHEN the user taps "Try it on this device", THE SYSTEM SHALL decode a built-in sample recording through the real ggwave decoder, with the live spectrogram, and show the message within 15 s, without needing a microphone. | 08-haunted-ui |
+| R16 | WHEN the user taps Relay on a received message, THE SYSTEM SHALL broadcast it again with the same message_id and the same payload bytes (still locked if it was locked, no passphrase needed), new salts, and the hop count raised by one; IF the hop count is already 7, THEN THE SYSTEM SHALL disable Relay. Every received message SHALL show its hop count. | 02-packet-protocol (hop field), 05-broadcast |
+| R17 | WHERE the user has created a group (name + passphrase), THE SYSTEM SHALL lock messages sent to that group with its passphrase, SHALL show each received message that unlocks with it in that group's thread in time order with the sender name written inside the message, and SHALL keep the passphrase in memory only (asked once per app session). | 09-groups |
 | R15 | *(only if call mode is promoted)* WHERE call mode is selected, THE SYSTEM SHALL send with the low-frequency protocol and volume set in `.kiro/steering/protocol.md`, and the receiver SHALL decode it without the user picking a mode. | 01-modem-core |
 
 ## 5. Non-functional requirements
@@ -83,11 +94,11 @@ Each ID becomes one Kiro spec. Kiro turns EARS acceptance criteria into property
 
 ## 6. Out of scope for v1
 
-Accounts, servers, sync, contacts directory, read receipts, group chat, translations beyond English.
+Accounts, servers, sync, contacts directory, read receipts, delivery confirmation, group member lists (a group is just its passphrase), translations beyond English.
 
 ## 7. Release criteria (Dec 1 freeze checklist)
 
-- [ ] R1 to R14 pass their tests (R15 too if call mode was promoted)
+- [ ] R1 to R14, R16 and R17 pass their tests (R15 too if call mode was promoted)
 - [ ] Solo demo works on a fresh laptop with no microphone permission granted
 - [ ] README names Nedagram, Waver and ggwave as prior art
 - [ ] Property suites P1 to P7 green, noise suite at baseline

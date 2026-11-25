@@ -71,7 +71,7 @@ Lab result with this design at FAST speed: 4 of 585 pattern frames failed with t
 | body | ≤ 120 | zero-padded before whitening so the frame is at least 12 bytes |
 | crc16 | 2 | CRC-16/CCITT-FALSE over magic..body; a mismatch drops the frame |
 
-**Manifest body** (inside the whitened part): total_frames (1), kind (1: 0 text, 1 contact, 2 location, 3 notice, 4 file), flags (1: bit0 compressed, bit1 locked, bit2 broadcast), payload_len (2), crc32 (4), then salt (16) and iv (12) only when locked. That is 37 bytes at most.
+**Manifest body** (inside the whitened part): total_frames (1), kind (1: 0 text, 1 contact, 2 location, 3 notice, 4 file), flags (1: bit0 compressed, bit1 locked, bit2 broadcast, bits 4–6 hop count 0–7 for R16, bits 3 and 7 reserved as 0), payload_len (2), crc32 (4), then salt (16) and iv (12) only when locked. That is 37 bytes at most.
 
 **Send order:** serialise → compress (only if smaller) → lock (if passphrase) → CRC-32 → split. The receiver reverses it.
 
@@ -80,6 +80,8 @@ Lab result with this design at FAST speed: 4 of 585 pattern frames failed with t
 - **Broadcast carousel (v1 default).** Play the manifest and all data frames, then repeat the cycle 3 times. Receivers collect until every `seq` has arrived. No back channel, unlimited listeners.
   - Simulation (`docs/research/carousel-sim.md`, Nov 20): a listener who joins anywhere in cycle 1, even mid-frame, had every frame by the end of cycle 2 (79/79 mid-frame joins), with 0 wrong bytes. Gaps of 0 to 600 ms all worked; keep 300 ms for real speakers and mic gain.
   - Room echo: FAST was clean up to RT60 0.8 s and NORMAL up to 1.0 s; **FASTEST already failed at 0.5 s**, so FASTEST is never used for room broadcast. In a very echoey hall, extra cycles don't help a phone stuck in an echo null; moving the phone 15 to 30 cm or switching to NORMAL does.
+- **Relay (R16).** A phone that completed a message keeps its payload bytes (ciphertext if locked), its message_id and manifest fields. Relay calls `splitPayload` with the same `messageId`, the same flags and `hop + 1`, then plays the carousel like any broadcast. Receivers that already have the message drop it with the replay guard, so a relay never shows twice. The hop count lives in the clear manifest, outside the CRC-32 (which covers the payload only), so a relay phone can raise it without the passphrase. Receivers built before the hop field read those bits as 0, because unknown flag bits are already ignored. Relays are started by a human tap, never automatically, so two relays don't play over each other in one room.
+- **Bridges.** Relay works across any channel that carries a voice: hold the relaying phone to a walkie-talkie, a PA microphone or a phone call, and the far end decodes the same bytes.
 - **Duplex repair (stretch).** The receiver plays a repair-request frame listing missing seq numbers; the sender replays only those.
 
 - **Call mode (candidate, see 04-prd.md).** Same frames, sent with ggwave's low-frequency `DT_FASTEST` protocol (1.08 to 2.63 kHz) at volume 50, which fits inside a phone call's 300 to 3,400 Hz band. About 9.8 s per 100 B. Lab codec results: `docs/research/codec-sim.md`.
@@ -92,12 +94,13 @@ IndexedDB database `wail`, version 1:
 
 | Store | Key | Fields | Notes |
 | --- | --- | --- | --- |
-| messages | id (UUID) | direction, kind, body (JSON), locked, locked_payload (bytes, kept until unlocked), status, created_at, air_time_ms, frame_count | Index on created_at. `locked_payload` holds the received ciphertext with its salt and IV so R7's unlock-later works |
+| messages | id (UUID) | direction, kind, body (JSON), group_id (null if none), hop, locked, locked_payload (bytes, kept until unlocked), status, created_at, air_time_ms, frame_count | Index on created_at. `locked_payload` holds the received ciphertext with its salt and IV so R7's unlock-later works |
 | transfers | message_id | total_frames, received (seq list), frames (seq → bytes), first_seen_at, last_seen_at | Deleted on success or 10 min after the last frame |
-| settings | key | value | Volume, speed, calm mode. Never the passphrase |
+| groups | id (UUID) | name, created_at | R17. The passphrase is never stored; it is asked once per app session and kept in memory |
+| settings | key | value | Volume, speed, calm mode, display name (sent inside group messages). Never a passphrase |
 | diagnostics | auto id | run_at, channel, distance_label, attempts, successes, avg_snr | Field-test log |
 
-Passphrases and keys live in memory only.
+Passphrases and keys live in memory only. When a locked message arrives, the receiver tries each group unlocked in this session (PBKDF2 per try, a few hundred ms on a phone); if none fits, it stays "Locked message" in history (R7).
 
 ## Security
 
@@ -106,6 +109,8 @@ Passphrases and keys live in memory only.
 | Eavesdropping | Optional lock: PBKDF2-SHA-256 (310,000 iterations, 16-byte salt per message) → AES-GCM-256 |
 | Tampering | AES-GCM tag on locked messages; CRC-32 on all (accidents only), so unlocked messages show "unverified sender" |
 | Replay | message_id ignored if completed in the last 10 minutes (R13) |
+| Fake sender in a group | The sender name is written by the sender; anyone with the group passphrase can claim any name. The UI shows "member of <group>", not a verified identity |
+| Relay reads a private message | It can't: a relay carries the locked bytes as they are and never needs the passphrase |
 | Data leaks | No backend, CSP blocks outside calls, no analytics |
 | Mic left on | Capture only on the Listen screen, with an indicator |
 
@@ -143,6 +148,9 @@ Limit stated in the README: Wail hides *what* was said when locked, not *that* a
 | iQOO Neo 6 | Vivo P27 + Samsung + laptop at once | Broadcast via speaker | 3 m, 6 m | 10 |
 | iQOO Neo 6 | Laptop | Bluetooth speaker | 3 m, 6 m | 10 |
 | iQOO Neo 6 | Vivo P27 | WhatsApp call, normal call | n/a | 10 |
+| Laptop → iQOO (relay, next room) → Samsung | Relay chain, 2 hops | Air, doors closed between rooms | 3 m per hop | 10 |
+| Relay phone into a call → far phone on speaker → listener | Relay over a call (hop 3) | Normal call, DT_FASTEST | n/a | 10 |
+| Phone → walkie-talkie → walkie-talkie → phone *(optional, if bought)* | Radio bridge | Licence-free walkie-talkies | 100 m, 500 m | 10 |
 
 ## Deployment
 

@@ -16,11 +16,12 @@ All items come from the official rules: https://kiroween.devpost.com/rules
 | Time | Shot | What is shown or said |
 | --- | --- | --- |
 | 0:00–0:15 | One phone on a speaker, three devices in airplane mode | "No internet. No SIM data. Watch." A short notice (about 16 bytes at FAST: a manifest frame plus one data frame, about 4 s of sound; not FASTEST, which fails in echoey rooms per `docs/research/carousel-sim.md`) plays and appears on all three at once |
-| 0:15–0:40 | Problem | Three verified facts on screen (below), one line on disasters |
-| 0:40–1:20 | Product | Late joiner: a fourth phone starts listening mid-message and completes it on the next cycle; a locked message; a location card; close and reopen the app in airplane mode to show it still loads |
-| 1:20–1:45 | Why it is different | One line on prior art ("one-to-one sound apps exist; Wail broadcasts to a room"), then the solo demo on a laptop: "Judges, try it on one device" |
-| 1:45–2:25 | How Kiro built it | Two readable, zoomed moments only: a property test shrinking the real ggwave silent-corruption bug, and the Crew nightly trend report |
-| 2:25–2:50 | Proof and close | Field-test table (incl. the call row if call mode shipped), live URL, repo link |
+| 0:15–0:35 | Problem | Three verified facts on screen (below), one line on disasters. Then the honest limit: "Sound covers one room. So how does a message cross a town?" |
+| 0:35–1:15 | **It travels** (the wow) | One continuous message with a hop counter on screen. Hop 1: the shelter PA reaches the hall. A phone at the door taps **Relay** and the next room gets it (hop 2). That phone relays into a normal phone call, and a phone in another town decodes it word for word (hop 3). Optional shot if walkie-talkies were bought: the same message over a walkie-talkie across the street |
+| 1:15–1:40 | **Groups** | A locked message to the "Ward 4 volunteers" group. A stranger's phone relays it but shows only "Locked message · hop 2"; a group member's phone shows it in the group thread. A late joiner completes it on the next cycle |
+| 1:40–2:00 | Why it is different | One line on prior art ("one-to-one sound apps exist; Wail broadcasts to a room and relays beyond it"), then the solo demo on a laptop: "Judges, try it on one device" |
+| 2:00–2:30 | How Kiro built it | Two readable, zoomed moments only: a property test shrinking a real bug (the signed CRC-32, or ggwave's silent corruption), and the Crew nightly trend report |
+| 2:30–2:50 | Proof and close | Field-test table (incl. the relay-chain and call rows), live URL, repo link |
 
 Audio: lower the modem sound in the edit so it doesn't hurt on headphones, and put captions on every spoken line.
 
@@ -32,7 +33,9 @@ Audio: lower the modem sound in the edit so it doesn't hurt on headphones, and p
 
 Optional fourth line: "India: 65 internet shutdowns in 2025, the most of any democracy." (Access Now)
 
-**Demo scenario:** an Odisha cyclone shelter. A coordinator's phone on the shelter's battery PA broadcasts a notice + location card to three phones; then a locked patient referral goes 1-to-1. Use a fictional phone number on screen.
+**Demo scenario:** an Odisha cyclone shelter. A coordinator's phone on the shelter's battery PA broadcasts a notice + location card to the hall; volunteers relay it to the next room and over a call to the next village; a locked message goes to the volunteers' group. Use a fictional phone number on screen.
+
+**If the call test fails (< 7/10):** hop 3 becomes a third room or a walkie-talkie instead of a call, and the video says calls are future work.
 
 ## Checklist
 
