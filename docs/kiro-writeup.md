@@ -32,6 +32,7 @@ During development (Kiro):
 
 | Property | Failure Kiro found | Shrunk input | Fix |
 | --- | --- | --- | --- |
+| P10 manifest round-trip (`tests/protocol/R8.manifest-round-trip.prop.test.ts`, Nov 25) | `parseManifest` read the 32-bit CRC with `<< 24`, which JavaScript turns into a signed number. About half of all real CRC-32 values have the top bit set, so the receiver would have rejected roughly every second message as corrupt. Failed after 2 runs. | `crc32: 2147483648` (2³¹), shrunk 24 times | `decodeU32LE(...) >>> 0` in `src/protocol/manifest.ts` |
 
 ## Kiro powers and third-party tools
 

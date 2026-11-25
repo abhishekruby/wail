@@ -73,11 +73,11 @@ Implements the pure-TypeScript packet protocol layer: constants, whitening, CRC 
     - `numRuns: 1000`
     - **Validates: Requirements 2.5, 2.8**
 
-- [ ] 5. Checkpoint — Ensure all tests pass
+- [x] 5. Checkpoint — Ensure all tests pass
   - Run `npx vitest run tests/protocol/` and confirm no failures before proceeding. Ask the user if any test fails.
 
-- [ ] 6. Implement manifest serialiser/parser
-  - [ ] 6.1 Create `src/protocol/manifest.ts`
+- [x] 6. Implement manifest serialiser/parser
+  - [x] 6.1 Create `src/protocol/manifest.ts`
     - Implement `serializeManifest(body: ManifestBody): Uint8Array`
     - Layout (LE): `total_frames (1) | kind (1) | flags (1) | payload_len (2) | crc32 (4)` = 9 bytes plain; append `enc_salt (16) | iv (12)` = 37 bytes locked
     - Implement `parseManifest(bytes: Uint8Array): ManifestParseResult`
@@ -85,14 +85,14 @@ Implements the pure-TypeScript packet protocol layer: constants, whitening, CRC 
     - Does not throw on invalid input
     - _Requirements: 4.1, 4.2, 8.1, 8.2, 8.4_
 
-  - [ ]* 6.2 Write property test `tests/protocol/R8.manifest-round-trip.prop.test.ts`
+  - [x]* 6.2 Write property test `tests/protocol/R8.manifest-round-trip.prop.test.ts`
     - **Property 10: Manifest round-trip** — for any valid `ManifestBody` (plain or locked), `parseManifest(serializeManifest(body))` returns `{ ok: true, value }` where all fields equal the original
     - Arbitraries: `fc.record` for `PlainManifestBody`; `fc.record` with `encSalt` (`fc.uint8Array({ minLength: 16, maxLength: 16 })`) and `iv` (`fc.uint8Array({ minLength: 12, maxLength: 12 })`) for locked
     - `numRuns: 1000`
     - **Validates: Requirements 8.3, 8.2**
 
-- [ ] 7. Implement payload splitter
-  - [ ] 7.1 Create `src/protocol/splitter.ts`
+- [x] 7. Implement payload splitter
+  - [x] 7.1 Create `src/protocol/splitter.ts`
     - Implement `splitPayload(payload: Uint8Array, options: SplitOptions): SplitResult`
     - `chunkSize = MAX_FRAME - 8` (= 120); split payload into chunks of that size
     - Return `{ ok: false, error: 'payload-too-large' }` if chunks would exceed 255
@@ -102,13 +102,13 @@ Implements the pure-TypeScript packet protocol layer: constants, whitening, CRC 
     - Generate `messageId` via `rng()` (2 bytes combined) unless overridden in options
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.7_
 
-  - [ ]* 7.2 Write property test `tests/protocol/R1.frame-bounds.prop.test.ts`
+  - [x]* 7.2 Write property test `tests/protocol/R1.frame-bounds.prop.test.ts`
     - **Property 4: Frame-length bounds** — for any payload of 0–2048 bytes, every frame from `splitPayload` has `MIN_FRAME ≤ length ≤ MAX_FRAME`
     - `numRuns: 1000`
     - **Validates: Requirements 2.7, 4.7, 1.3, 1.4**
 
-- [ ] 8. Implement replay guard
-  - [ ] 8.1 Create `src/protocol/replay-guard.ts`
+- [x] 8. Implement replay guard
+  - [x] 8.1 Create `src/protocol/replay-guard.ts`
     - Implement `ReplayGuard` class with `has(messageId: number): boolean` and `record(messageId: number): void`
     - Internal state: `Map<number, number>` (messageId → recorded_at_ms)
     - Lazy eviction in `record()`: sweep and delete entries where `clock() - recorded_at > REPLAY_WINDOW_MS`
