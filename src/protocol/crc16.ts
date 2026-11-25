@@ -40,8 +40,8 @@ export function crc16(bytes: Uint8Array): number {
   let crc = 0xffff;
 
   for (let i = 0; i < bytes.length; i++) {
-    const byte = bytes[i] ^ (crc >>> 8);
-    crc = ((crc << 8) ^ CRC16_TABLE[byte]) & 0xffff;
+    const byte = bytes[i]! ^ (crc >>> 8);
+    crc = ((crc << 8) ^ CRC16_TABLE[byte]!) & 0xffff;
   }
 
   return crc;

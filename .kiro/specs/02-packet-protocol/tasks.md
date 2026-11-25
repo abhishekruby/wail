@@ -40,8 +40,8 @@ Implements the pure-TypeScript packet protocol layer: constants, whitening, CRC 
     - No new runtime dependency — implemented from scratch
     - _Requirements: 4.4, 6.1_
 
-- [ ] 4. Implement frame encoder
-  - [ ] 4.1 Create `src/protocol/frame-encoder.ts`
+- [x] 4. Implement frame encoder
+  - [x] 4.1 Create `src/protocol/frame-encoder.ts`
     - Implement `buildFrame(fields: FrameFields, options?: EncoderOptions): EncodeResult`
     - Wire layout: `salt (1, clear) | whitened[ magic (1) | version+type (1) | message_id (2 LE) | seq (1) | body (zero-padded) | crc16 (2 LE) ]`
     - CRC-16 is computed over the un-whitened `magic..body` region, appended, then the entire region `[1..end]` is whitened
@@ -51,7 +51,7 @@ Implements the pure-TypeScript packet protocol layer: constants, whitening, CRC 
     - Implement `resaltFrame(frame: Uint8Array, newSalt: number): Uint8Array`: dewhiten with old salt (byte 0), write newSalt at index 0, rewhiten with newSalt — returns a new `Uint8Array`
     - _Requirements: 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 2.5, 2.7, 2.8_
 
-  - [ ] 4.2 Create `src/protocol/frame-decoder.ts`
+  - [x] 4.2 Create `src/protocol/frame-decoder.ts`
     - Implement `decodeFrame(bytes: Uint8Array): DecodedFrame | null` following the 12-step algorithm in the design
     - Reject if `bytes.length < MIN_FRAME` or `bytes.length > MAX_FRAME`
     - Extract salt from byte 0, dewhiten bytes 1.. with that salt
@@ -61,13 +61,13 @@ Implements the pure-TypeScript packet protocol layer: constants, whitening, CRC 
     - Return typed `DecodedFrame` on success
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.7_
 
-  - [ ]* 4.3 Write property test `tests/protocol/R3.decoder-drop.prop.test.ts`
+  - [x]* 4.3 Write property test `tests/protocol/R3.decoder-drop.prop.test.ts`
     - **Property 2: Single-byte corruption drops frame** — for any valid encoded frame, flipping any single byte in the whitened region (index ≥ 1) makes `decodeFrame` return `null`
     - Arbitraries: generate a valid frame via `buildFrame` with deterministic RNG, then pick a random index ≥ 1 and XOR with a random non-zero mask
     - `numRuns: 1000`
     - **Validates: Requirements 3.6, 3.3**
 
-  - [ ]* 4.4 Write property test `tests/protocol/R1.resalt.prop.test.ts`
+  - [x]* 4.4 Write property test `tests/protocol/R1.resalt.prop.test.ts`
     - **Property 11: resaltFrame correctness** — `resaltFrame(frame, newSalt)` produces byte 0 = `newSalt` and `decodeFrame(resaltFrame(frame, newSalt))` returns fields identical to `decodeFrame(frame)`
     - Filter cases where `newSalt === frame[0]` to ensure the salt actually changes
     - `numRuns: 1000`

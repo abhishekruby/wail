@@ -43,7 +43,7 @@ export function crc32(bytes: Uint8Array): number {
 
   for (let i = 0; i < bytes.length; i++) {
     const byte = bytes[i]!;
-    crc = CRC32_TABLE[(crc ^ byte) & 0xff] ^ (crc >>> 8);
+    crc = CRC32_TABLE[(crc ^ byte) & 0xff]! ^ (crc >>> 8);
   }
 
   return (crc ^ 0xffffffff) >>> 0;
