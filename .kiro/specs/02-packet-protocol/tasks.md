@@ -12,28 +12,28 @@ Implements the pure-TypeScript packet protocol layer: constants, whitening, CRC 
   - `types.ts` imports only from `constants.ts`; neither file imports from outside `src/protocol/`
   - _Requirements: 1.1, 1.2, 2.8_
 
-- [ ] 2. Implement whitening
-  - [ ] 2.1 Create `src/protocol/whiten.ts`
+- [x] 2. Implement whitening
+  - [x] 2.1 Create `src/protocol/whiten.ts`
     - Implement `whiten(bytes: Uint8Array, salt: number): Uint8Array` using the xorshift32 stream: seed `= (0x57A11 ^ Math.imul(salt, 0x9E3779B1)) >>> 0 || 1`, per-byte `s ^= s << 13; s >>>= 0; s ^= s >>> 17; s ^= s << 5; s >>>= 0; out[i] = bytes[i] ^ (s & 0xff)`
     - Returns a new `Uint8Array`; never mutates input
     - Seed value `0` is replaced with `1`
     - _Requirements: 2.1, 2.2, 2.6, 3.1_
 
-  - [ ]* 2.2 Write property test `tests/protocol/R3.whiten-involution.prop.test.ts`
+  - [x]* 2.2 Write property test `tests/protocol/R3.whiten-involution.prop.test.ts`
     - **Property 1: Whitening involution** — for any `Uint8Array` and any salt in [0, 255], `whiten(whiten(x, salt), salt)` equals `x`
     - Arbitraries: `fc.uint8Array({ minLength: 0, maxLength: 200 })` and `fc.integer({ min: 0, max: 255 })`
     - `numRuns: 1000`
     - **Validates: Requirements 2.6**
 
-- [ ] 3. Implement CRC utilities
-  - [ ] 3.1 Create `src/protocol/crc16.ts`
+- [x] 3. Implement CRC utilities
+  - [x] 3.1 Create `src/protocol/crc16.ts`
     - Implement `crc16(bytes: Uint8Array): number` using a 256-entry lookup table generated at module load
     - Poly `0x1021`, init `0xFFFF`, no input/output reflection (CRC-16/CCITT-FALSE / CRC-16/IBM-3740)
     - Returns an unsigned 16-bit integer
     - No new runtime dependency — implemented from scratch
     - _Requirements: 2.2, 3.2_
 
-  - [ ] 3.2 Create `src/protocol/crc32.ts`
+  - [x] 3.2 Create `src/protocol/crc32.ts`
     - Implement `crc32(bytes: Uint8Array): number` using a 256-entry lookup table generated at module load
     - Reflected poly `0xEDB88320`, init `0xFFFFFFFF`, final XOR `0xFFFFFFFF` (ISO 3309 / IEEE 802.3)
     - Returns an unsigned 32-bit integer
