@@ -119,6 +119,7 @@ export class GgwaveModem implements Modem {
   private constructor();
   encode(frame: Uint8Array): EncodeAudioResult;
   feed(samples: Float32Array): Uint8Array[];
+  reset(): void;
 }
 ```
 
@@ -136,9 +137,12 @@ export class GgwaveModem implements Modem {
    - `'normal'` → `gg.ProtocolId.GGWAVE_PROTOCOL_AUDIBLE_NORMAL`
    - `'fast'` → `gg.ProtocolId.GGWAVE_PROTOCOL_AUDIBLE_FAST`
 9. Create instance: `const inst = gg.init(p)`.
-10. Return `new GgwaveModem(gg, inst, config, protocolId)` (private constructor with stored fields).
+10. Calculate chunk size: `const chunkBytes = p.samplesPerFrame * 4` (1024 samples × 4 bytes per Float32 = 4096 bytes at 48 kHz).
+11. Store `chunkBytes` as a private field for use in `feed()`.
+12. Initialize pending buffer: `pending = new Int8Array(0)`.
+13. Return `new GgwaveModem(gg, inst, config, protocolId, chunkBytes)` (private constructor with stored fields).
 
-**Private constructor**: Store `gg`, `inst`, `config`, `protocolId` for use in encode/feed.
+**Private constructor**: Store `gg`, `inst`, `config`, `protocolId`, and `chunkBytes` for use in encode/feed. Initialize `pending` to an empty Int8Array.
 
 **encode(frame: Uint8Array): EncodeAudioResult**:
 ```
@@ -166,13 +170,24 @@ return { ok: true; samples: float32 }
 // This is a bit-reinterpretation, not a numeric conversion.
 int8View = new Int8Array(samples.buffer, samples.byteOffset, samples.byteLength)
 
+// Append new samples to pending buffer
+if int8View.length > 0:
+  combined = new Int8Array(pending.length + int8View.length)
+  combined.set(pending, 0)
+  combined.set(int8View, pending.length)
+  pending = combined
+
 frames = []
 
-// Split into chunks of at most 4096 bytes
-for chunk of chunks(int8View, 4096):
+// Feed complete chunks to ggwave (each chunk is exactly samplesPerFrame samples = 4096 bytes)
+while pending.length >= chunkBytes:
+  chunk = pending.subarray(0, chunkBytes)
+  
+  // ggwave's decode() ONLY works when fed exactly samplesPerFrame samples.
+  // Feeding fewer or more bytes decodes nothing.
+  result = gg.decode(inst, chunk)
+  
   loop:
-    result = gg.decode(inst, chunk)
-    
     if result is empty or null:
       break loop
     
@@ -180,9 +195,19 @@ for chunk of chunks(int8View, 4096):
     frame = new Uint8Array(result)
     frames.push(frame)
     
-    // Loop again to check if another frame is ready
+    // Check if another frame is ready
+    result = gg.decode(inst, new Int8Array(0))
+  
+  // Remove processed chunk from pending
+  pending = pending.slice(chunkBytes)
 
 return frames
+```
+
+**reset(): void**:
+```
+// Clear any partially-buffered samples
+pending = new Int8Array(0)
 ```
 
 **WASM memory discipline**: Document in comments that every ggwave output must be copied before the next ggwave call. The WASM linear memory is reused for each operation.

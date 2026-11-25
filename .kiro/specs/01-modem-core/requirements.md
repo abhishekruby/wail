@@ -67,7 +67,9 @@ Sources of truth: R2 and R10 in `docs/planning/04-prd.md`; "The seam between our
    - Set sample rate: `p.sampleRateInp = config.sampleRate; p.sampleRateOut = config.sampleRate`.
    - Map speed to protocol ID: `'normal'` → `gg.ProtocolId.GGWAVE_PROTOCOL_AUDIBLE_NORMAL`, `'fast'` → `gg.ProtocolId.GGWAVE_PROTOCOL_AUDIBLE_FAST`.
    - Create instance: `const inst = gg.init(p)`.
-   - Store `gg`, `inst`, `config`, and `protocolId` for later use.
+   - **Calculate chunk size**: `const chunkBytes = p.samplesPerFrame * 4` (1024 samples × 4 bytes per Float32 = 4096 bytes at 48 kHz). This is the exact block size ggwave's decode() requires.
+   - Initialize pending buffer: `pending = new Int8Array(0)`.
+   - Store `gg`, `inst`, `config`, `protocolId`, `chunkBytes`, and `pending` for later use.
    - Return a new `GgwaveModem` instance with a private constructor (async factory pattern).
 
 2. WHEN `encode(frame: Uint8Array)` is called on a GgwaveModem instance:
@@ -80,17 +82,21 @@ Sources of truth: R2 and R10 in `docs/planning/04-prd.md`; "The seam between our
 
 3. WHEN `feed(samples: Float32Array)` is called on a GgwaveModem instance:
    - Build a byte view: `const int8View = new Int8Array(samples.buffer, samples.byteOffset, samples.byteLength)` (handles sub-array views).
-   - Split the byte view into chunks of at most 4096 bytes (1024 samples at 32-bit width).
-   - For each chunk, call `const result = gg.decode(inst, chunk)`.
-   - If result is not empty, **copy immediately**: `const decoded = new Uint8Array(result)` and add to the frames list.
-   - After all chunks, loop back to check if another frame is ready (ggwave buffers state internally).
+   - Append the new bytes to the pending buffer.
+   - **Feed complete chunks of exactly `chunkBytes` bytes to ggwave's decode()**: ggwave's decode() only works when fed exactly `samplesPerFrame` samples (1024 samples = 4096 bytes at 48 kHz). Feeding fewer or more bytes decodes nothing. While `pending.length >= chunkBytes`, extract a chunk, call `const result = gg.decode(inst, chunk)`, then remove the chunk from pending.
+   - For each non-empty result from decode(), **copy immediately**: `const decoded = new Uint8Array(result)` and add to the frames list. Then loop back to check if another frame is ready (ggwave buffers state internally).
+   - After processing all complete chunks, return the list of `Uint8Array` frames (possibly empty). Keep the remainder (< `chunkBytes` bytes) in the pending buffer for the next call to `feed()`.
    - Return the list of `Uint8Array` frames (possibly empty).
 
-4. THE `GgwaveModem` instance SHALL be **created once per session** (at app startup) via the async factory and reused for the entire send/receive cycle. Do not create a new instance per message or per repeat.
+4. WHEN `reset(): void` is called on a GgwaveModem instance:
+   - Clear any partially-buffered samples: `pending = new Int8Array(0)`.
+   - This is useful for cleaning up between messages or when the signal is lost and you want to start fresh.
 
-5. NEVER pass more than `MAX_FRAME` (128) bytes to ggwave's `encode`. The ggwave library silently truncates longer input, losing data.
+5. THE `GgwaveModem` instance SHALL be **created once per session** (at app startup) via the async factory and reused for the entire send/receive cycle. Do not create a new instance per message or per repeat.
 
-6. NEVER use the Int8Array or Float32Array views returned directly by ggwave; always copy them out of WASM memory before the next ggwave call, because ggwave reuses the same memory region for the next operation.
+6. NEVER pass more than `MAX_FRAME` (128) bytes to ggwave's `encode`. The ggwave library silently truncates longer input, losing data.
+
+7. NEVER use the Int8Array or Float32Array views returned directly by ggwave; always copy them out of WASM memory before the next ggwave call, because ggwave reuses the same memory region for the next operation.
 
 ---
 

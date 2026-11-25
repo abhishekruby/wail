@@ -6,8 +6,8 @@ Implements the modem-core layer: a type-safe interface to encode frames as audio
 
 ## Tasks
 
-- [ ] 1. Create `src/modem/modem.ts` and type stubs
-  - [ ] 1.1 Create `src/modem/modem.ts`
+- [x] 1. Create `src/modem/modem.ts` and type stubs
+  - [x] 1.1 Create `src/modem/modem.ts`
     - Define `EncodeAudioResult` type as `{ ok: true; samples: Float32Array } | { ok: false; error: 'frame-too-large' | 'empty-frame' }`
     - Define the `Modem` interface with two methods:
       - `encode(frame: Uint8Array): EncodeAudioResult` — Takes a frame, returns either a Float32 waveform or an error result
@@ -15,7 +15,7 @@ Implements the modem-core layer: a type-safe interface to encode frames as audio
     - Add JSDoc comments explaining that `encode` returns amplitude [−1, +1] on success, `feed` accepts any block size, and both are synchronous
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.6_
 
-  - [ ] 1.2 Create `src/modem/modem-config.ts`
+  - [x] 1.2 Create `src/modem/modem-config.ts`
     - Define `ModemConfig` interface with fields: `speed: 'normal' | 'fast'`, `volume: number`, `sampleRate: number`, `callMode?: 'dt-fastest'`
     - Define `ValidResult` type as `{ ok: true } | { ok: false; error: string }`
     - Implement `validateModemConfig(config: ModemConfig): ValidResult` with validation logic:
@@ -28,8 +28,8 @@ Implements the modem-core layer: a type-safe interface to encode frames as audio
     - Never throw on invalid input
     - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-- [ ] 2. Implement PassthroughModem test double
-  - [ ] 2.1 Create `src/modem/passthrough-modem.ts`
+- [x] 2. Implement PassthroughModem test double
+  - [x] 2.1 Create `src/modem/passthrough-modem.ts`
     - Define `PassthroughModem` class implementing `Modem`
     - Constructor: accept and ignore all configuration
     - `encode(frame: Uint8Array): EncodeAudioResult`:
@@ -44,7 +44,7 @@ Implements the modem-core layer: a type-safe interface to encode frames as audio
       - Otherwise return `[]`
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 1.1_
 
-  - [ ] 2.2 Write unit test `tests/modem/modem.test.ts` (PassthroughModem portion)
+  - [x] 2.2 Write unit test `tests/modem/modem.test.ts` (PassthroughModem portion)
     - Test: PassthroughModem.encode with valid frame returns `{ ok: true; samples: Float32Array }`
     - Test: PassthroughModem.encode with empty frame returns `{ ok: false; error: 'empty-frame' }`
     - Test: PassthroughModem.encode with oversized frame returns `{ ok: false; error: 'frame-too-large' }`
@@ -52,8 +52,8 @@ Implements the modem-core layer: a type-safe interface to encode frames as audio
     - Test: PassthroughModem.feed with invalid frame bytes returns empty list
     - _Requirements: 3.1, 3.3, 3.4_
 
-- [ ] 3. Implement GgwaveModem
-  - [ ] 3.1 Create `src/modem/ggwave-modem.ts`
+- [x] 3. Implement GgwaveModem
+  - [x] 3.1 Create `src/modem/ggwave-modem.ts`
     - Define `GgwaveModemConfig` interface with fields: `sampleRate: number`, `speed: 'normal' | 'fast'`, `volume: number`
     - Define `GgwaveModem` class implementing `Modem`
     - Static factory `static async create(config: GgwaveModemConfig): Promise<GgwaveModem>`:
@@ -99,7 +99,7 @@ Implements the modem-core layer: a type-safe interface to encode frames as audio
       - Return the frames list (possibly empty)
       - _Requirements: 2.3, 2.6, 6.1, 7.2_
 
-  - [ ] 3.2 Write property test `tests/modem/R2.ggwave-round-trip.prop.test.ts`
+  - [x] 3.2 Write property test `tests/modem/R2.ggwave-round-trip.prop.test.ts`
     - **Property 2: GgwaveModem encode-feed round-trip** — for random frames of 12..128 bytes, `encode` then `feed(encodedWaveform)` returns exactly the same bytes, at both 'normal' and 'fast' speeds
     - Create a GgwaveModem instance per speed using `await GgwaveModem.create(config)`
     - Arbitraries: `fc.uint8Array({ minLength: 12, maxLength: 128 })` for frames; `fc.constantFrom('normal', 'fast')` for speed
@@ -111,7 +111,7 @@ Implements the modem-core layer: a type-safe interface to encode frames as audio
     - `numRuns: 30`; set test timeout to 60,000 ms
     - **Validates: Requirements 2.2, 2.3, 2.5, 6.1, 7.1, 7.2**
 
-  - [ ] 3.3 Write property test `tests/modem/R2.multi-block-feed.prop.test.ts`
+  - [x] 3.3 Write property test `tests/modem/R2.multi-block-feed.prop.test.ts`
     - **Property: Multi-block feed assembly** — splitting an encoded frame into random chunks (64..4096 bytes) and feeding them one by one still decodes the frame
     - Create a modem instance
     - Generate a random frame and encode it: `result = modem.encode(frame)`
@@ -122,7 +122,7 @@ Implements the modem-core layer: a type-safe interface to encode frames as audio
     - `numRuns: 10`; set test timeout to 60,000 ms
     - **Validates: Requirements 1.4, 2.3, 6.1**
 
-  - [ ] 3.4 Write example-based noise test `tests/modem/R2.noise-resilience.test.ts`
+  - [x] 3.4 Write example-based noise test `tests/modem/R2.noise-resilience.test.ts`
     - **Property: Noise resilience** — white noise at +10 dB and 0 dB SNR decodes 10/10 times at FAST speed
     - Create a modem instance with speed='fast'
     - Seeded PRNG (Box-Muller): generate Gaussian noise deterministically with fixed seed
@@ -140,15 +140,15 @@ Implements the modem-core layer: a type-safe interface to encode frames as audio
     - Set test timeout to 60,000 ms
     - _Validates: Requirements 2.5, 5.1, 5.2_
 
-  - [ ] 3.5 Write unit test `tests/modem/modem.test.ts` (GgwaveModem portion)
+  - [x] 3.5 Write unit test `tests/modem/modem.test.ts` (GgwaveModem portion)
     - Test: `GgwaveModem.create` with invalid config throws or returns error
     - Test: `encode` with valid frame returns `{ ok: true; samples: Float32Array }` with amplitude in [−1, +1]
     - Test: `encode` with empty frame returns `{ ok: false; error: 'empty-frame' }`
     - Test: `encode` with oversized frame returns `{ ok: false; error: 'frame-too-large' }`
     - _Requirements: 2.1, 2.2, 2.4, 5.1, 5.2_
 
-- [ ] 4. Create barrel and validate
-  - [ ] 4.1 Create `src/modem/index.ts`
+- [x] 4. Create barrel and validate
+  - [x] 4.1 Create `src/modem/index.ts`
     - Re-export all public types and functions:
       - `export { Modem, EncodeAudioResult } from './modem.js'`
       - `export { GgwaveModem } from './ggwave-modem.js'`
@@ -157,7 +157,7 @@ Implements the modem-core layer: a type-safe interface to encode frames as audio
       - `export type { ModemConfig, ValidResult } from './modem-config.js'`
     - _Requirements: 1.1, 2.1, 3.1, 4.1, 4.2_
 
-  - [ ] 4.2 Write unit test `tests/modem/modem.test.ts` (configuration portion)
+  - [x] 4.2 Write unit test `tests/modem/modem.test.ts` (configuration portion)
     - Test: `validateModemConfig` with valid config returns `{ ok: true }`
     - Test: invalid speed returns `{ ok: false, error: 'invalid-speed' }`
     - Test: invalid volume (0, 101, non-integer) returns `{ ok: false, error: 'invalid-volume' }`
@@ -166,7 +166,7 @@ Implements the modem-core layer: a type-safe interface to encode frames as audio
     - Test: `DEFAULT_MODEM_CONFIG.speed` is `'fast'`
     - _Requirements: 4.1, 4.2, 4.3_
 
-- [ ] 5. Final checkpoint — Ensure all tests pass
+- [x] 5. Final checkpoint — Ensure all tests pass
   - Run `npx vitest run tests/modem/` with 60s timeout and confirm no failures. All tests (unit + property) should pass before marking this spec complete.
 
 ## Notes
