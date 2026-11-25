@@ -150,7 +150,7 @@ Implements the pure-TypeScript crypto layer: passphrase normalisation, PBKDF2-SH
   - `numRuns: 2` (small because iterations are real and slow)
   - **Validates: Requirements 2.1, 2.3_
 
-- [ ] 9. Final checkpoint — Ensure all tests pass
+- [x] 9. Final checkpoint — Ensure all tests pass
 
 ## Notes
 
