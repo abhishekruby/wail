@@ -13,7 +13,7 @@ const speed = () => $<HTMLSelectElement>('speed').value as 'fast' | 'normal';
 let mic: MicCapture | null = null;
 
 async function modemFor(ctx: AudioContext): Promise<GgwaveModem> {
-  return GgwaveModem.create({ sampleRate: ctx.sampleRate, speed: speed(), volume: 10 });
+  return GgwaveModem.create({ sampleRate: ctx.sampleRate, speed: speed(), volume: Number($<HTMLSelectElement>('vol').value) });
 }
 
 $('listen').onclick = async () => {
@@ -68,7 +68,7 @@ $('send').onclick = async () => {
     return;
   }
   const gap = new Float32Array(Math.round(ctx.sampleRate * 0.3));
-  log(`sending ${payload.length} B as ${split.frames.length} frames × 3 cycles, ${speed()}`);
+  log(`sending ${payload.length} B as ${split.frames.length} frames × 3 cycles, ${speed()}, volume ${$<HTMLSelectElement>('vol').value}`);
   for (let cycle = 0; cycle < 3; cycle++) {
     for (const f of split.frames) {
       const frame = cycle === 0 ? f : resaltFrame(f, (f[0]! + cycle * 85) & 0xff);
