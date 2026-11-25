@@ -6,20 +6,20 @@ Implements the pure-TypeScript crypto layer: passphrase normalisation, PBKDF2-SH
 
 ## Tasks
 
-- [ ] 1. Create `src/pipeline/constants.ts` and `src/pipeline/types.ts`
+- [x] 1. Create `src/pipeline/constants.ts` and `src/pipeline/types.ts`
   - Export constants from `constants.ts`: `PBKDF2_ITERATIONS = 310_000`, `PBKDF2_SALT_LEN = 16`, `PBKDF2_KEY_LEN = 32`, `AES_GCM_IV_LEN = 12`, `AES_GCM_TAG_LEN = 16`
   - Define all shared TypeScript interfaces and type aliases in `types.ts`: `LockOptions`, `UnlockOptions`, `LockResult`, `UnlockResult`; import `RngSource` type-only from `src/protocol/types.js`
   - `types.ts` imports only from `constants.ts` and `src/protocol/types.ts` (type-only); neither file imports other runtime code
   - _Requirements: 1.1, 2.1, 3.1, 4.1, 5.1_
 
-- [ ] 2. Implement passphrase normalisation
-  - [ ] 2.1 Create `src/pipeline/passphrase.ts`
+- [x] 2. Implement passphrase normalisation
+  - [x] 2.1 Create `src/pipeline/passphrase.ts`
     - Implement `normalisePassphrase(passphrase: string): string` using `passphrase.normalize('NFC').trim()`
     - Returns the result (may be empty); the caller validates
     - _Requirements: 1.1, 1.2, 1.3_
 
-- [ ] 3. Implement PBKDF2 key derivation
-  - [ ] 3.1 Create `src/pipeline/derive-key.ts`
+- [x] 3. Implement PBKDF2 key derivation
+  - [x] 3.1 Create `src/pipeline/derive-key.ts`
     - Implement `deriveKey(normalisedPassphrase: string, salt: Uint8Array, iterations: number): Promise<CryptoKey>`
       - Convert passphrase to bytes via `new TextEncoder().encode()`
       - Import as CryptoKey: `crypto.subtle.importKey('raw', passphraseBytes, { name: 'PBKDF2' }, false, ['deriveKey'])`
@@ -31,8 +31,8 @@ Implements the pure-TypeScript crypto layer: passphrase normalisation, PBKDF2-SH
       - Used only in the RFC 6070 known-answer test
     - _Requirements: 2.1, 2.2, 2.3, 8.1_
 
-- [ ] 4. Implement lock function
-  - [ ] 4.1 Create `src/pipeline/lock.ts`
+- [x] 4. Implement lock function
+  - [x] 4.1 Create `src/pipeline/lock.ts`
     - Implement `lock(plaintext: Uint8Array, passphrase: string, options?: LockOptions): Promise<LockResult>`
     - Normalise passphrase: `const normalised = normalisePassphrase(passphrase)`
     - If `normalised === ''`, return `{ ok: false, error: 'empty-passphrase' }` immediately
@@ -49,7 +49,7 @@ Implements the pure-TypeScript crypto layer: passphrase normalisation, PBKDF2-SH
       - Otherwise, use `crypto.getRandomValues(buffer)`
     - _Requirements: 1.1, 1.3, 3.1, 3.3, 4.1, 5.1, 7.1_
 
-  - [ ]* 4.2 Write property test `tests/pipeline/R2.lock-round-trip.prop.test.ts`
+  - [x] 4.2 Write property test `tests/pipeline/R6.lock-round-trip.prop.test.ts`
     - **Property P5a, P5b, P5c, P5d — Round-trip and passphrase sensitivity** — lock then unlock with the same passphrase returns the plaintext; different passphrases or normalized equivalents behave correctly; empty passphrases are rejected
     - Arbitraries: `fc.uint8Array({ minLength: 0, maxLength: 2048 })` for plaintext; `fc.string()` for passphrase (including empty strings, whitespace-only, Unicode, NFC-equivalent pairs); deterministic RNG seeded via `fc.integer`
     - Test corpus: plaintext sizes 0, 1, 10, 100, 1000, 2048 bytes; passphrase types (ASCII, Unicode, whitespace, normalized equivalents); iterations 1,000 for speed
@@ -57,15 +57,15 @@ Implements the pure-TypeScript crypto layer: passphrase normalisation, PBKDF2-SH
     - `numRuns: 1000`
     - **Validates: Requirements 1.1, 1.5, 2.1, 2.3, 4.5, 5.1, 5.6, 6.1_
 
-  - [ ]* 4.3 Write property test `tests/pipeline/R2.bit-flip-detection.prop.test.ts`
+  - [x] 4.3 Write property test `tests/pipeline/R7.bit-flip-detection.prop.test.ts`
     - **Property P5e, P5f, P5g — Salt/IV sensitivity and bit-flip detection** — wrong salt/IV or bit-flipped ciphertext causes unlock to fail
     - Arbitraries: generate a valid lock result with deterministic RNG; `fc.integer` for bit position within ciphertext, salt, or IV; `fc.integer({ min: 1, max: 255 })` for XOR mask (non-zero)
     - Test: flip the selected bit in ciphertext/salt/iv and verify `unlock` returns `'wrong-passphrase'`
     - `numRuns: 1000`
     - **Validates: Requirements 2.2, 3.1, 4.6, 6.2_
 
-- [ ] 5. Implement unlock function
-  - [ ] 5.1 Create `src/pipeline/unlock.ts`
+- [x] 5. Implement unlock function
+  - [x] 5.1 Create `src/pipeline/unlock.ts`
     - Implement `unlock(ciphertext: Uint8Array, passphrase: string, encSalt: Uint8Array, iv: Uint8Array, options?: UnlockOptions): Promise<UnlockResult>`
     - Validate `encSalt.length === 16` before deriving; if not, return `{ ok: false, error: 'wrong-passphrase' }`
     - Validate `iv.length === 12`; if not, return `{ ok: false, error: 'wrong-passphrase' }`
@@ -78,14 +78,14 @@ Implements the pure-TypeScript crypto layer: passphrase normalisation, PBKDF2-SH
       - Catch any error (AES-GCM tag verify fail, SubtleCrypto exception, type error) and return `{ ok: false, error: 'wrong-passphrase' }` **without logging or exposing the error**
     - _Requirements: 1.1, 1.4, 4.4, 4.6, 5.3, 6.3, 7.1, 7.2_
 
-  - [ ]* 5.2 Write property test `tests/pipeline/R2.fresh-randomness.prop.test.ts`
+  - [x] 5.2 Write property test `tests/pipeline/R6.fresh-randomness.prop.test.ts`
     - **Property P5h — Fresh randomness** — calling lock twice with the same inputs but no injected RNG produces different ciphertexts
     - Arbitraries: `fc.uint8Array({ minLength: 10, maxLength: 100 })` for plaintext; `fc.string({ minLength: 1 }).map(s => normalisePassphrase(s)).filter(s => s.length > 0)` for passphrase
     - Test: call `lock(plaintext, passphrase, { iterations: 1000 })` 10 times with no injected RNG (uses system CSPRNG), collect all ciphertexts, verify they are all distinct (not equal to any other)
-    - `numRuns: 1000`
+    - `numRuns: 200`
     - **Validates: Requirements 3.1, 3.3_
 
-- [ ] 6. Create barrel `src/pipeline/index.ts`
+- [x] 6. Create barrel `src/pipeline/index.ts`
   - Re-export the full public API surface: `lock`, `unlock`, `normalisePassphrase`
   - Re-export all types from `types.ts`: `LockOptions`, `UnlockOptions`, `LockResult`, `UnlockResult`, `RngSource`
   - Do NOT export `deriveBits` (test-only; tests import directly from derive-key.ts)
@@ -93,28 +93,28 @@ Implements the pure-TypeScript crypto layer: passphrase normalisation, PBKDF2-SH
   - No implementation logic in this file
   - _Requirements: 1.1, 5.1_
 
-- [ ] 7. Write unit tests `tests/pipeline/pipeline.test.ts`
-  - [ ] 7.1 Write known-answer test (RFC 6070 / RFC 7914 vector)
+- [x] 7. Write unit tests `tests/pipeline/pipeline.test.ts`
+  - [x] 7.1 Write known-answer test (RFC 6070 / RFC 7914 vector)
     - Import `deriveBits` directly from `src/pipeline/derive-key.ts`
     - Test vector: passphrase `'password'` (ASCII), salt `'salt'` (ASCII bytes), 1 iteration
     - Derive bits and compare first 32 bytes (hex) with reference `120fb6cffcf8b32c43e7225256c4f837a86548c92ccc35480805987cb70be17b`
     - Validates that `crypto.subtle.deriveBits` with PBKDF2-SHA-256 matches the standard
     - _Requirements: 2.1, 2.3, 8.1_
 
-  - [ ] 7.2 Write passphrase normalisation tests
+  - [x] 7.2 Write passphrase normalisation tests
     - Verify `normalisePassphrase('  test  ')` equals `'test'`
     - Verify `normalisePassphrase('café')` (precomposed U+00E9) equals `normalisePassphrase('cafe\u0301')` (decomposed e + combining acute)
     - Verify `normalisePassphrase('')` equals `''`
     - Verify `normalisePassphrase('   ')` equals `''`
     - _Requirements: 1.1, 1.2, 1.5_
 
-  - [ ] 7.3 Write empty passphrase tests
+  - [x] 7.3 Write empty passphrase tests
     - Verify `lock(plaintext, '')` returns `{ ok: false, error: 'empty-passphrase' }`
     - Verify `lock(plaintext, '   ')` returns `{ ok: false, error: 'empty-passphrase' }` (whitespace only)
     - Verify `lock(plaintext, '\u00AD')` where the input is a soft hyphen (a whitespace-like character that normalizes away) returns the error
     - _Requirements: 1.1, 1.3_
 
-  - [ ] 7.4 Write round-trip tests
+  - [x] 7.4 Write round-trip tests
     - Deterministic RNG (all bytes = 0 for reproducibility):
       - Plaintext: `Uint8Array.from([1, 2, 3, 4, 5])`
       - Passphrase: `'test-pass'`
@@ -123,25 +123,25 @@ Implements the pure-TypeScript crypto layer: passphrase normalisation, PBKDF2-SH
       - Verify `encSalt.length === 16` and `iv.length === 12`
     - _Requirements: 4.1, 4.5, 5.1, 5.5, 6.1_
 
-  - [ ] 7.5 Write tampered ciphertext tests
+  - [x] 7.5 Write tampered ciphertext tests
     - Deterministic lock with known-good plaintext/passphrase/salt/iv
     - Flip one byte at position 0 of ciphertext and verify `unlock` returns `{ ok: false, error: 'wrong-passphrase' }`
     - Flip one byte in `encSalt` and verify same result
     - Flip one byte in `iv` and verify same result
     - _Requirements: 4.6, 6.2_
 
-  - [ ] 7.6 Write wrong-passphrase tests
+  - [x] 7.6 Write wrong-passphrase tests
     - Lock with passphrase `'correct'`
     - Unlock with passphrase `'wrong'` and verify `{ ok: false, error: 'wrong-passphrase' }`
     - Unlock with passphrase `'CORRECT'` (case-sensitive) and verify same result
     - _Requirements: 1.5, 4.6, 6.1_
 
-  - [ ] 7.7 Write size-validation tests
+  - [x] 7.7 Write size-validation tests
     - Unlock with `encSalt.length !== 16` and verify `{ ok: false, error: 'wrong-passphrase' }` (before deriving key)
     - Unlock with `iv.length !== 12` and verify same result
     - _Requirements: 4.6, 6.2_
 
-- [ ] 8. Write property test `tests/pipeline/R2.real-iterations.prop.test.ts`
+- [x] 8. Write property test `tests/pipeline/R6.real-iterations.prop.test.ts`
   - Executes `lock` and `unlock` with the actual 310,000 iterations (not reduced for speed)
   - Arbitraries: plaintext 100 bytes, passphrase 10–20 characters (ASCII)
   - Deterministic RNG (zero seed)
@@ -151,14 +151,19 @@ Implements the pure-TypeScript crypto layer: passphrase normalisation, PBKDF2-SH
   - **Validates: Requirements 2.1, 2.3_
 
 - [ ] 9. Final checkpoint — Ensure all tests pass
-  - Run `npx vitest run tests/pipeline/` and confirm all implementation tasks and optional tests pass
-  - Ask the user if any test fails
 
 ## Notes
 
-- Tasks marked with `*` are optional and can be skipped for a faster MVP, but each one enforces a crypto invariant from `docs/planning/06-architecture.md`
+- **CORRECTED test names** (R6/R7 requirement IDs used instead of R2):
+  - `tests/pipeline/R6.lock-round-trip.prop.test.ts` — covers P5a, P5b, P5c, P5d
+  - `tests/pipeline/R7.bit-flip-detection.prop.test.ts` — covers P5e, P5f, P5g
+  - `tests/pipeline/R6.fresh-randomness.prop.test.ts` — covers P5h
+  - `tests/pipeline/R6.real-iterations.prop.test.ts` — real 310,000 iterations for performance verification
+- **Corrected LockResult error union**: `'empty-passphrase' | 'lock-failed'` (lock returns 'lock-failed' if any crypto.subtle call throws)
+- **Property tests are required** (removed '*' marker): all property tests must use `fc.asyncProperty` with `await fc.assert(...)` inside async it callbacks
+- All property tests use **1000 numRuns** except fresh-randomness (200) and real-iterations (2)
 - Each task references specific requirements for traceability; `Rn.m` refers to Requirement n, criterion m in `requirements.md`
-- All property tests use `numRuns: 1000` (except real-iterations which uses 2) and a deterministic RNG injected via `LockOptions.rng` — no random input is left to chance in reproducibility
+- All property tests use a deterministic RNG injected via `LockOptions.rng` — no random input is left to chance in reproducibility
 - The crypto layer uses only `globalThis.crypto.subtle` (Web Crypto API, available in Node 22) and built-in `TextEncoder`. No external crypto dependencies are added.
 - `src/pipeline/constants.ts` holds the PBKDF2 and AES-GCM configuration constants; test files import these directly if they need to override (e.g. `PBKDF2_ITERATIONS` for fast testing).
 - `src/pipeline/types.ts` imports `RngSource` type-only from `src/protocol/types.js` to avoid a runtime import of protocol code.

@@ -4,8 +4,9 @@ Fill this in as you build. Judges look for each of these. Add screenshots to `do
 
 ## Kiro surfaces used and how they differed
 
-- **Kiro IDE:**
-- **Kiro CLI:**
+- **Kiro IDE:** used to create spec 02 (packet protocol) in Spec mode: requirements → design → tasks, with two review rounds that changed the requirements (late-joiner buffering, CRC-before-whitening order) and the design (`resaltFrame` so every broadcast repeat gets a new salt; reassembler lifecycle after success and CRC failure). Planning one spec cost about 13 credits on the default model.
+- **Kiro CLI (3.6.0):** used for everything after that: executing spec tasks (`kiro-cli chat --no-interactive --trust-tools=fs_read,fs_write`) and creating spec 03 in spec mode (`--mode spec`). We picked `claude-haiku-4.5` (0.40× credits) per run with `--model`; a task cost about 0.5 credits and planning spec 03 cost about 4, roughly a third of spec 02 in the IDE. Limiting trusted tools to file read/write meant Kiro never ran shell commands; every change was then type-checked, tested and reviewed before commit. The CLI and IDE share the same account, specs and steering.
+- **How they differed:** the IDE is better for the first spec of a project (approval buttons, visible diffs); the CLI made the build loop scriptable and cheap enough to fit inside the free plan while waiting for hackathon credits.
 - **Kiro Crew:** (wail-nightwatch, link)
 
 ## Spec-driven development vs vibe coding
