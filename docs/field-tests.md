@@ -48,6 +48,18 @@ The cliff sits between −5 and −10 dB. Real rooms add echo, speaker distortio
 
 The volume-50 row was also re-run by Claude Code (`node --experimental-strip-types spikes/codec-sim/run.ts 50`) with the same result. Real calls add noise suppression, voice detection and gain control, which this does not model.
 
+## Decoder block size (Nov 25, 2026, Node, ggwave 0.4.0, FAST, 48 kHz)
+
+ggwave decodes only when `decode` receives exactly `samplesPerFrame` samples (1,024 at 48 kHz) per call. Found while reviewing spec 01 (modem core).
+
+| Block size fed to decode | Frames decoded (1 frame, fresh decoder) |
+| --- | --- |
+| 64, 128, 256, 512 samples | 0 |
+| 1,024 or 4,096 samples | 1 |
+| Any size (64, 128, 333, 4,096) with buffering into exact 1,024-sample chunks | 3 of 3 in a 3-frame broadcast stream with 0.3 s gaps |
+
+The browser's AudioWorklet delivers 128-sample blocks, so `GgwaveModem.feed` buffers and hands ggwave exact 1,024-sample chunks.
+
 ## Broadcast and room-echo simulation (Nov 20, 2026, offline)
 
 5 frames × 100 B, 3 cycles, +10 dB white noise, synthetic room echo, 300 ms gaps. Written by Antigravity (`spikes/carousel-sim/run.ts`), re-run by Claude Code. Full report: `docs/research/carousel-sim.md`.
