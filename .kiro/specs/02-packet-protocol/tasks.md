@@ -6,7 +6,7 @@ Implements the pure-TypeScript packet protocol layer: constants, whitening, CRC 
 
 ## Tasks
 
-- [ ] 1. Create `src/protocol/constants.ts` and `src/protocol/types.ts`
+- [x] 1. Create `src/protocol/constants.ts` and `src/protocol/types.ts`
   - Export `MAX_FRAME = 128`, `MIN_FRAME = 12`, `MAGIC = 0x57`, `VERSION = 1`, frame-type constants (`FRAME_TYPE_MANIFEST = 0`, `FRAME_TYPE_DATA = 1`, `FRAME_TYPE_REPAIR_REQUEST = 2`), and `REPLAY_WINDOW_MS = 10 * 60 * 1000` from `constants.ts`
   - Define all shared TypeScript interfaces and type aliases in `types.ts`: `RngSource`, `FrameFields`, `EncoderOptions`, `EncodeResult`, `BaseDecodedFrame`, `ManifestFrame`, `DataFrame`, `RepairRequestFrame`, `DecodedFrame` (discriminated union), `FrameKind`, `ManifestFlags`, `PlainManifestBody`, `LockedManifestBody`, `ManifestBody`, `ManifestParseResult`, `SplitOptions`, `SplitResult`, `ReassemblerOptions`, `ReassemblyResult`
   - `types.ts` imports only from `constants.ts`; neither file imports from outside `src/protocol/`
