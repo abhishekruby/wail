@@ -115,8 +115,8 @@ Implements the pure-TypeScript packet protocol layer: constants, whitening, CRC 
     - Constructor accepts optional `clock?: () => number` (default `Date.now`)
     - _Requirements: 7.1, 7.2, 7.3, 7.4_
 
-- [ ] 9. Implement reassembler
-  - [ ] 9.1 Create `src/protocol/reassembler.ts`
+- [x] 9. Implement reassembler
+  - [x] 9.1 Create `src/protocol/reassembler.ts`
     - Implement `createReassembler(options?: ReassemblerOptions)` returning `{ feed(frame: DecodedFrame): ReassemblyResult; expireStale(): void }`
     - Per-transfer state: `manifest: ManifestBody | null`, `frames: Map<number, Uint8Array>`, `lastSeen: number`
     - Late-joiner path: data frames arriving before the manifest are buffered under `message_id`; when the manifest arrives check for immediate completeness
@@ -130,39 +130,39 @@ Implements the pure-TypeScript packet protocol layer: constants, whitening, CRC 
     - Accept `options.clock` (default `Date.now`) and `options.replayGuard` (create a new `ReplayGuard(clock)` if absent)
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 6.1, 6.2, 6.3, 7.1, 7.2, 7.5_
 
-  - [ ]* 9.2 Write property test `tests/protocol/R1.round-trip.prop.test.ts`
+  - [x]* 9.2 Write property test `tests/protocol/R1.round-trip.prop.test.ts`
     - **Property 3: Payload round-trip** — for any `Uint8Array` of 0–2048 bytes, split with `splitPayload`, decoded with `decodeFrame`, fed to `reassembler.feed` returns a payload byte-for-byte equal to the original
     - Use deterministic RNG for `buildFrame`; `numRuns: 1000`
     - **Validates: Requirements 4.6, 5.4, 5.5, 6.2**
 
-  - [ ]* 9.3 Write property test `tests/protocol/R3.order-independent.prop.test.ts`
+  - [x]* 9.3 Write property test `tests/protocol/R3.order-independent.prop.test.ts`
     - **Property 5: Order-independence and duplicate-tolerance** — shuffling the frame list into any order and inserting arbitrary duplicates before feeding to the Reassembler produces the same payload as the original order
     - Arbitraries: `fc.shuffledSubarray` on the frame list; `fc.array` with repeats inserted
     - `numRuns: 1000`
     - **Validates: Requirements 5.6, 5.2**
 
-  - [ ]* 9.4 Write property test `tests/protocol/R4.missing-frame.prop.test.ts`
+  - [x]* 9.4 Write property test `tests/protocol/R4.missing-frame.prop.test.ts`
     - **Property 6: Incomplete frame set never yields bytes** — removing at least one data frame or the manifest from any valid frame set, the Reassembler never returns `{ status: 'complete' }`
     - `numRuns: 1000`
     - **Validates: Requirements 5.7, 4.3**
 
-  - [ ]* 9.5 Write property test `tests/protocol/R3.crc32-flip.prop.test.ts`
+  - [x]* 9.5 Write property test `tests/protocol/R3.crc32-flip.prop.test.ts`
     - **Property 7: CRC-32 flip rejection** — for any reassembled payload with exactly one byte flipped at any position, the Reassembler returns `{ status: 'crc-fail' }` and no bytes are exposed
     - `numRuns: 1000`
     - **Validates: Requirements 6.4, 6.3**
 
-  - [ ]* 9.6 Write property test `tests/protocol/R3.late-manifest.prop.test.ts`
+  - [x]* 9.6 Write property test `tests/protocol/R3.late-manifest.prop.test.ts`
     - **Property 9: Late-manifest delivery** — feeding data frames first and manifest last returns the same payload as feeding the manifest first
     - `numRuns: 1000`
     - **Validates: Requirements 5.1, 5.3**
 
-  - [ ]* 9.7 Write property test `tests/protocol/R13.replay-guard.prop.test.ts`
+  - [x]* 9.7 Write property test `tests/protocol/R13.replay-guard.prop.test.ts`
     - **Property 8: Replay guard suppresses re-delivery** — after a successful delivery, feeding the same frames again within the 10-minute window returns `{ status: 'replayed' }`; after the clock advances past 10 minutes, feeding them returns `{ status: 'complete' }`
     - Use injected clock returning controlled timestamps
     - `numRuns: 1000`
     - **Validates: Requirements 7.1, 7.2, 7.3**
 
-- [ ] 10. Create barrel `src/protocol/index.ts`
+- [x] 10. Create barrel `src/protocol/index.ts`
   - Re-export the full public API surface: `MAX_FRAME`, `MIN_FRAME`, `whiten`, `crc16`, `crc32`, `buildFrame`, `resaltFrame`, `decodeFrame`, `serializeManifest`, `parseManifest`, `splitPayload`, `createReassembler`, `ReplayGuard`
   - Re-export all types from `types.ts`
   - No implementation logic in this file

@@ -5,8 +5,6 @@
  * frame-decoder, manifest, splitter, and reassembler to avoid circular imports.
  */
 
-import type { REPLAY_WINDOW_MS } from './constants.js';
-
 // ============================================================================
 // RNG and encoder options
 // ============================================================================
@@ -128,7 +126,7 @@ export type SplitResult =
 export interface ReassemblerOptions {
   /** Injectable clock (default: Date.now). */
   clock?: () => number;
-  replayGuard?: any; // ReplayGuard class (avoid circular import)
+  replayGuard?: { has(messageId: number): boolean; record(messageId: number): void };
 }
 
 export type ReassemblyResult =
