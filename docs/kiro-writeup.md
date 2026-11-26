@@ -4,6 +4,8 @@ Fill this in as you build. Judges look for each of these. Add screenshots to `do
 
 ## Kiro surfaces used and how they differed
 
+- **Steering update (Nov 26):** when the product changed to Séance, Kiro rewrote `.kiro/steering/product.md` itself (prompt 6), so every later spec starts from the new product.
+
 - **Kiro IDE:** used to create spec 02 (packet protocol) in Spec mode: requirements → design → tasks, with two review rounds that changed the requirements (late-joiner buffering, CRC-before-whitening order) and the design (`resaltFrame` so every broadcast repeat gets a new salt; reassembler lifecycle after success and CRC failure). Planning one spec cost about 13 credits on the default model.
 - **Kiro CLI (3.6.0):** used for everything after that: executing spec tasks (`kiro-cli chat --no-interactive --trust-tools=fs_read,fs_write`) and creating spec 03 in spec mode (`--mode spec`). We picked `claude-haiku-4.5` (0.40× credits) per run with `--model`; a task cost about 0.5 credits and planning spec 03 cost about 4, roughly a third of spec 02 in the IDE. Limiting trusted tools to file read/write meant Kiro never ran shell commands; every change was then type-checked, tested and reviewed before commit. The CLI and IDE share the same account, specs and steering.
 - **How they differed:** the IDE is better for the first spec of a project (approval buttons, visible diffs); the CLI made the build loop scriptable and cheap enough to fit inside the free plan while waiting for hackathon credits.
@@ -35,9 +37,12 @@ During development (Kiro):
 | --- | --- | --- | --- |
 | P10 manifest round-trip (`tests/protocol/R8.manifest-round-trip.prop.test.ts`, Nov 25) | `parseManifest` read the 32-bit CRC with `<< 24`, which JavaScript turns into a signed number. About half of all real CRC-32 values have the top bit set, so the receiver would have rejected roughly every second message as corrupt. Failed after 2 runs. | `crc32: 2147483648` (2³¹), shrunk 24 times | `decodeU32LE(...) >>> 0` in `src/protocol/manifest.ts` |
 | Modem round-trip (`tests/modem/R2.ggwave-round-trip.prop.test.ts`, Nov 26) | Failed at random: real ggwave never decodes some whitened frames on one particular salt (2 of 256 salts at NORMAL for one body). The test demanded first-try decode; the product resalts every repeat | body `[239,213,1,114,169,202,32,200,168,219]`, salt 38 | Kiro CLI rewrote the property to "one of 3 salts decodes, never wrong bytes" and added a regression test; Claude Code then tightened the byte check (frames decoded during trailing silence and length mismatches now count) |
+| G2 omen clues (`tests/game/R23.true-clues.prop.test.ts`, Nov 26) | In a true clue "one of candles X, Y is possessed" the Possessed candle was always X, so the order gave the answer away (false clues were always ascending, a second tell). Spotted in review; the property `a < b` then failed on the unfixed code because Kiro had reported the fix without saving it | `[4, 0, 16773836]`: clue a = 2, b = 0 | Kiro re-sent with exact instructions: one `oneOf()` helper orders every pair |
 
 ## Kiro powers and third-party tools
 
 ## Work done outside Kiro (disclosure)
 
 Before Kiro credits arrived (Nov 20, 2026): planning docs in `docs/planning/`, first drafts of `.kiro/steering/`, the lab baseline test, the kill-test spike, and two research pieces in `docs/research/` (a phone-codec simulation and an outside review of the plan) were prepared with Claude and Gemini (Antigravity). None of it is product code. Everything in `src/` is built through Kiro specs; any exception is listed here.
+
+- Nov 26: Claude Code fixed two test-harness bugs in Kiro's `tests/game/R23.true-clues.prop.test.ts` (an `await` and `require()` inside a non-async test helper, and a helper that could end the game before checking clues). No change to `src/`.
