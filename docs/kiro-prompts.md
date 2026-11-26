@@ -78,64 +78,99 @@ Create a custom agent named protocol-auditor. Its job: review any change to src/
 
 Every time the auditor catches something, write one line in `docs/kiro-writeup.md` ("Custom agent" section): what it caught and in which file. Those lines are the evidence judges look for.
 
-# Kiro prompts, Relay and Groups (added Nov 25)
+# Kiro prompts, Séance (added Nov 26)
 
-Run these after credits arrive, in order. Same rules as above: review each stage with Claude Code before approving. With the CLI: `kiro-cli chat --no-interactive --model claude-haiku-4.5 --mode spec --trust-tools=fs_read,fs_write "<prompt>"`.
+Wail is now Séance, a party game played through sound (`docs/planning/11-seance-game-design.md`, PRD v2.0). Run these in order, one task at a time, and review each stage with Claude Code before approving. CLI form: `kiro-cli chat --no-interactive --model claude-haiku-4.5 --mode spec --trust-tools=fs_read,fs_write "<prompt>"`.
 
-## Prompt 6 · Update spec `02-packet-protocol`: hop count
+Rules to keep in every task prompt: `a[i]!` for in-range reads; `fc.assert(fc.property(...), { numRuns })` with options as the second argument of `fc.assert`; `fc.asyncProperty` with `await` for async; import from the file that defines a symbol; `export type` for types; no scratch files; don't run commands; read files back after writing.
 
-Mode: **Spec** (update the existing spec, don't create a new one).
+## Prompt 6 · Steering update + spec `10-game` (pure rules)
+
+Mode: **Spec**.
 
 ```
-Update the existing spec 02-packet-protocol for requirement R16 in docs/planning/04-prd.md (Relay).
+First, update .kiro/steering/product.md so it describes Wail: Séance, the party game in docs/planning/11-seance-game-design.md and docs/planning/04-prd.md (v2.0). Keep it short: one-line pitch, users (party players 4-8 plus a host; judges on one laptop), what matters most (secret roles stay secret, zero setup, fun in 10 seconds, never show a wrong role, accessibility and calm mode), scope v1 = R20-R27 plus the engine.
 
-Change: the manifest flags byte gets a hop count in bits 4-6 (0-7). Bits 3 and 7 stay reserved and are written as 0. Add `hop: number` to ManifestFlags in src/protocol/types.ts; encodeFlags/decodeFlags in src/protocol/manifest.ts read and write it; splitPayload passes it through. decodeFlags must keep ignoring reserved bits. A hop outside 0-7 is rejected by splitPayload with a new error 'invalid-hop'.
+Then create a spec named 10-game for Wail.
 
-First update the manifest flags line in .kiro/steering/protocol.md to match docs/planning/06-architecture.md (already updated).
+Source of truth: R22, R23, R24 and R25 in docs/planning/04-prd.md and the game rules in docs/planning/11-seance-game-design.md.
 
-Add a requirement, design notes and tasks for: (a) property test tests/protocol/R16.hop-roundtrip.prop.test.ts: for any hop 0-7 and any flags, serialise then parse returns the same flags including hop, numRuns 1000; (b) property: splitting the same payload with the same messageId and a different hop reassembles to the same payload bytes and CRC-32; (c) a manifest with hop bits set still parses for kind 0-4.
+Scope: src/game/rules.ts and src/game/types.ts only. Pure TypeScript, no DOM, no Web Crypto, no audio; runnable in Node. Randomness comes from an injected rng so tests are deterministic.
 
-Do not change the frame header, CRC-16, CRC-32 or whitening.
+Include:
+1. assignRoles(playerCount, rng): playerCount 4-8, returns a role per candle (index 0..n-1): 1 Possessed for 4-5 players, 2 for 6-8, the rest Living. Any other count returns { ok: false, error: 'bad-player-count' }.
+2. makeOmen(state, rng): for every candle still in the game, one short clue. A Living player's clue is always true, a Possessed player's clue is believable and may be false. Clue shapes: "Candle X is not possessed" or "One of candles X, Y is possessed". A clue never names the receiving player.
+3. banish(state, candle): marks the candle banished and returns its role; banishing an already banished or unknown candle returns an error and changes nothing.
+4. winner(state): 'living' when every Possessed is banished, 'possessed' when the Possessed still in the game are as many as the Living still in the game, else null.
+
+Property tests (numRuns 200 or more) in tests/game/: G1 tests/game/R22.roles.prop.test.ts (right count of Possessed for every count 4-8, never 0); G2 tests/game/R23.true-clues.prop.test.ts (every clue to a Living player is true for the actual roles); G4 tests/game/R25.game-ends.prop.test.ts (any sequence of valid banishments reaches a winner within playerCount steps, and the winner matches the rules).
+
+Do not touch src/protocol, src/pipeline, src/modem or src/audio.
 ```
 
-What Claude Code will check: hop not inside the CRC-32, reserved bits ignored on read, existing 85 tests still pass, `fc.assert(fc.property(...), { numRuns })`.
+## Prompt 7 · Update spec `03-crypto`: key exchange for players
 
-## Prompt 7 · Spec `05-broadcast` with Relay
+Mode: **Spec** (update the existing spec).
+
+```
+Update the existing spec 03-crypto for requirements R21 and R22 in docs/planning/04-prd.md and the "Game messages" section (Keys) in docs/planning/06-architecture.md.
+
+Add src/pipeline/keyx.ts, pure Web Crypto (globalThis.crypto.subtle), runnable in Node 22:
+1. createKeyPair(): a fresh ECDH P-256 key pair; the private key is non-extractable.
+2. exportPublicKey(pair): the raw public key, 65 bytes. importPublicKey(bytes): returns { ok: false, error: 'bad-public-key' } for anything that is not a valid 65-byte P-256 point, never throws.
+3. fingerprint(publicKeyBytes): the first 4 bytes of SHA-256 of the raw key.
+4. deriveSharedKey(myPrivate, theirPublic, gameId): ECDH, then HKDF-SHA-256 with gameId as salt and the text "wail-seance" as info, giving a non-extractable AES-GCM-256 key.
+5. seal(key, iv12, plaintext) and open(key, iv12, sealed): AES-GCM with a 16-byte tag; open never throws and returns { ok: false, error: 'wrong-key' } on any failure.
+6. ivFor(messageType, round, candle): a deterministic 12-byte IV built from those three numbers, so no IV is ever sent on the air and none repeats under one key within a game.
+
+Property test G3 at tests/pipeline/R22.keyx.prop.test.ts (fc.asyncProperty, numRuns 50): for 2-8 players with fresh key pairs, the host and each player derive the same key; each player opens its own sealed role and gets { ok: false } for every other player's entry. A test that importPublicKey rejects random 65-byte arrays that are not on the curve.
+
+Do not change lock/unlock or any existing test.
+```
+
+## Prompt 8 · Update spec `10-game`: game messages
+
+Mode: **Spec** (update the existing spec).
+
+```
+Update the existing spec 10-game with requirements R20 and R21 in docs/planning/04-prd.md and the "Game messages" table in docs/planning/06-architecture.md.
+
+Add src/game/messages.ts: encode and decode for the five message types join, possession, omen, reveal and end, exactly as in the table (first payload byte = type). Possession and omen entries are sealed per player with src/pipeline/keyx.ts (seal, ivFor) and found by fingerprint. Decoding never throws: anything malformed returns { ok: false, error }. A phone's candle number is the index of its fingerprint in the possession message.
+
+Also add host and player state machines in src/game/session.ts that use rules.ts and messages.ts: the host collects joins (max 8, ignores a repeated public key), builds possession, omen, reveal and end; the player creates its key pair, builds its join, and reads only its own entries.
+
+Property tests (fc.asyncProperty, numRuns 50): for any 4-8 players, every message type round-trips through encode then decode; a player session given the host's possession message shows exactly the role assigned to its candle; a corrupted entry gives { ok: false } and never a different role.
+```
+
+## Prompt 9 · Spec `05-broadcast`
 
 Mode: **Spec**.
 
 ```
 Create a spec named 05-broadcast for Wail.
 
-Source of truth: R5 and R16 in docs/planning/04-prd.md, the Transfer modes section (Broadcast carousel, Relay, Bridges) in docs/planning/06-architecture.md, and docs/research/carousel-sim.md (300 ms gap between frames, new salt for every repeat with resaltFrame).
+Source of truth: R5 in docs/planning/04-prd.md, the Broadcast carousel in docs/planning/06-architecture.md and docs/research/carousel-sim.md (300 ms gap, new salt for every repeat with resaltFrame), and docs/field-tests.md (some frames never decode on one salt, so repeats must change the salt).
 
-Scope: src/app/broadcast.ts (pure logic, no DOM) and its tests. It uses src/protocol (splitPayload, resaltFrame) and the Modem interface from src/modem; audio playback is passed in as a function so tests run in Node with PassthroughModem.
+Scope: src/app/broadcast.ts (pure logic, no DOM). It uses splitPayload and resaltFrame from src/protocol and the Modem interface from src/modem; playback is passed in as an async function so tests run in Node with PassthroughModem. broadcast(payload, options) plays the manifest and data frames for 3 cycles (or until cancelled), a new salt for every repeat, 300 ms gap, and reports progress (cycle, frame) through a callback.
 
-Include:
-1. broadcast(payload, options): plays manifest + data frames for 3 cycles (or until stopped), a new salt per repeat, 300 ms gap, and reports progress (cycle, frame) through a callback. It can be cancelled.
-2. relay(received): takes a completed message (payload bytes as received, messageId, kind, flags including hop) and broadcasts it again with the same messageId, the same payload bytes and hop + 1. A locked message is relayed as is; relay never needs or asks for a passphrase. If hop is already 7, relay returns { ok: false, error: 'hop-limit' } and plays nothing.
-3. A ReceivedMessage type that keeps what relay needs (the reassembler result plus the manifest fields).
-
-Property tests: tests/app/R5.carousel.prop.test.ts (every frame appears in every cycle, salts differ between repeats); tests/app/R16.relay.prop.test.ts (relay then reassemble gives the same payload bytes and messageId with hop + 1; for any hop 7, relay plays nothing). Use PassthroughModem, numRuns 200 or more.
+Property test tests/app/R5.carousel.prop.test.ts (numRuns 200): every frame appears in every cycle, salts differ between repeats of the same frame, cancel stops before the next frame.
 ```
 
-## Prompt 8 · Spec `09-groups`
+## Prompt 10 · Spec `08-haunted-ui`: host, player, Play alone
 
 Mode: **Spec**.
 
 ```
-Create a spec named 09-groups for Wail.
+Create a spec named 08-haunted-ui for Wail.
 
-Source of truth: R17 and R7 in docs/planning/04-prd.md, the groups store, messages.group_id and the Security table in docs/planning/06-architecture.md, and the lock/unlock API already built in src/pipeline/ (spec 03).
+Source of truth: R20, R21, R24-R27 and R10 in docs/planning/04-prd.md, docs/planning/11-seance-game-design.md, docs/planning/07-ux-design-and-wireframes.md and .kiro/steering/haunted-ui.md. First change --phosphor-dim in .kiro/steering/haunted-ui.md to #56a86e (measured contrast fix in 07).
 
-Scope: src/app/groups.ts (pure logic) plus the groups store in src/store/. A group is { id, name, createdAt }. The passphrase is never written to storage: unlockGroup(id, passphrase) keeps it in memory for this app session; lockAll() forgets every passphrase.
+Scope: src/ui/ and src/main.tsx (Preact). Screens:
+1. Home: Host a séance, Join a séance, Play alone.
+2. Host: Summon (mic on, indicator, candle circle lights on each join), Begin (4-8 players), Omen, tap a candle to Banish, end screen. Uses src/game/session.ts, src/app/broadcast.ts, src/audio and GgwaveModem.
+3. Player: Answer (plays the join chirp), then waits listening; shows candle number and spooky name; role and clues only while a finger is held on the screen (R27); vibrates on each new message where supported.
+4. Play alone (R26): host plus 3 bot players on one device; the host's waveform goes straight into each bot's GgwaveModem.feed in memory, no microphone; the screen shows the judge's own player view next to the host view.
+Calm mode: no flashing or shaking, same information. Every audio error in plain words.
 
-Include:
-1. sendToGroup(groupId, text): builds the message body { from: displayName, text } (UTF-8 JSON), locks it with the group passphrase using src/pipeline lock, and returns the bytes and lock parameters ready for broadcast.
-2. onLockedMessage(payload, salt, iv): tries unlock with each group unlocked this session; on success returns { groupId, from, text }; if none fits returns { status: 'locked' } so history keeps it for later (R7). unlock never throws.
-3. thread(groupId): messages of that group in time order, sent and received.
-
-Property tests: tests/app/R17.group-roundtrip.prop.test.ts (sendToGroup then onLockedMessage with the same group unlocked returns the same from and text; with a different passphrase returns 'locked'); a test that no passphrase ever reaches the store. Use a low PBKDF2 iteration count in tests only, as spec 03 does.
-
-Do not build UI in this spec; the thread screen is part of spec 08-haunted-ui.
+Tests: component tests for hold-to-reveal and calm mode; one Node test that Play alone completes a full game with a fixed rng.
 ```

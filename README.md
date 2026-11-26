@@ -1,16 +1,18 @@
 # Wail
 
-**Broadcast a short message to every device in the room, as sound. No internet, no SIM data, no pairing.**
+**Séance: a Halloween party game where a ghost speaks to every phone in the room through sound. No app, no Wi-Fi, no join code, no internet.**
 
-When mobile data is cut, one phone on a loudspeaker plays the message as tones and every device in earshot with Wail open decodes it. The message repeats, so anyone who starts listening late still gets all of it. Built for relief teams, clinics and organisers during internet shutdowns and disasters. Open it once online; after that it works offline.
+The host's laptop on a speaker is the ghost. Players open the link and "answer the summons" with a short chirp. Then the ghost screams in modem tones, and every phone shows a secret role at the same moment: Living or Possessed. Each round it whispers private clues; players argue, banish someone, and the ghost reveals the truth.
 
-> The dial-up modem died in the 2000s. We dug it up, because when the internet is switched off, sound still travels.
+Everyone hears the same sound, yet roles stay secret: each phone makes its own key when it joins, so it can open only its own part of the broadcast.
 
-Entry for **Kiroween 2026**, category **Resurrection**.
+> The dial-up modem died in the 2000s. We dug it up and gave it to a ghost.
+
+Entry for **Kiroween 2026**, category **Resurrection**. Game design: [docs/planning/11-seance-game-design.md](docs/planning/11-seance-game-design.md).
 
 ## Status
 
-Planning complete (Nov 20, 2026), revised after an outside review and a codec simulation. Development starts with the Phase 0 kill test. See [docs/planning/](docs/planning/00-README.md).
+Nov 26, 2026: the sound engine (packet protocol, modem, audio, encryption) is built with Kiro and covered by 86 tests. The game layer and screens are next. Earlier plans for a disaster-broadcast app are kept in `docs/planning/` as history.
 
 ## Run it
 
@@ -44,7 +46,7 @@ Sending data as sound is not new, and we build on that work:
 - [Nedagram](https://github.com/shayanb/Nedagram): an offline PWA that sends text over sound or a phone call from one person to another, with encryption and error correction, aimed at sharing configs, passwords and keys.
 - Chirp (acquired by Sonos in 2020, SDK withdrawn), Quiet.js, Fldigi/AndFlmsg for radio operators.
 
-Wail's focus is different: **one sender to a whole room**, a repeating broadcast that late listeners can still complete, structured crisis cards for non-technical people, and reliability numbers published per channel.
+Phone party games today need internet, a shared screen and a room code. Wail's focus is different: **a game played through sound alone**, one speaker to a whole room, a repeating broadcast that late listeners can still complete, and per-player secrets on a channel everyone hears.
 
 ## Built with Kiro
 

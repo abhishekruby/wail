@@ -1,15 +1,15 @@
 # 06 · System architecture
 
-Stage status: done (Nov 20, 2026)
+Stage status: done (Nov 20, 2026) · Nov 26: game layer added for Séance (`11-seance-game-design.md`); relay, groups, cards and call mode removed
 
 Wail is client-only and layered. A message goes **down** six layers on the sender, crosses the air as sound, and goes **up** the same six layers on every receiver. Only sound leaves the device.
 
 ```
  ┌──────────────── Wail PWA on each device ────────────────┐
  │                                                          │
- │  UI (Preact)  Séance · Compose · Crypt · Altar  ──── Service worker (offline)
+ │  UI (Preact)  Host · Player · Play alone  ──── Service worker (offline)
  │      ↕                                                   │
- │  Message service  cards, history, send/listen state ──── IndexedDB
+ │  Game (ours)  rules, roles, clues, rounds, key exchange  │
  │      ↕                                                   │
  │  Payload pipeline  serialise → compress → lock           │
  │      ↕                                                   │
@@ -27,15 +27,15 @@ Wail is client-only and layered. A message goes **down** six layers on the sende
 
 | Component | Folder | Responsibility | Depends on |
 | --- | --- | --- | --- |
-| UI | `src/ui/` | Screens, theme, spectrogram canvas, calm mode | Message service |
-| Message service | `src/app/` | Compose → send, listen → history, state machine | Pipeline, packet, store |
-| Payload pipeline | `src/pipeline/` | Card serialise/parse, deflate-raw, lock/unlock | Web Crypto, CompressionStream |
+| UI | `src/ui/` | Host, Player and Play alone screens, theme, level meter, calm mode | Game |
+| Game | `src/game/` | Pure rules engine (roles, clues, rounds, win check) and game message encode/decode | Pipeline, packet |
+| Broadcast | `src/app/` | Carousel: 3 cycles, new salt per repeat, 300 ms gaps | Packet, modem |
+| Payload pipeline | `src/pipeline/` | lock/unlock (passphrase), ECDH key exchange and per-player AES-GCM | Web Crypto |
 | Packet layer | `src/protocol/` | Frame encode/decode, chunking, reassembly, CRC-32, replay guard | none (pure) |
 | Modem adapter | `src/modem/` | Wraps ggwave behind the `Modem` interface | ggwave |
 | Audio I/O | `src/audio/` | Mic worklet, playback, analyser | Web Audio API |
-| Store | `src/store/` | IndexedDB stores | idb |
 
-The packet layer is pure TypeScript with no browser APIs, so it is fully testable in Node.
+The packet layer and the game rules are pure TypeScript with no browser APIs, so they are fully testable in Node.
 
 ## The seam between our code and ggwave
 
@@ -71,7 +71,7 @@ Lab result with this design at FAST speed: 4 of 585 pattern frames failed with t
 | body | ≤ 120 | zero-padded before whitening so the frame is at least 12 bytes |
 | crc16 | 2 | CRC-16/CCITT-FALSE over magic..body; a mismatch drops the frame |
 
-**Manifest body** (inside the whitened part): total_frames (1), kind (1: 0 text, 1 contact, 2 location, 3 notice, 4 file), flags (1: bit0 compressed, bit1 locked, bit2 broadcast, bits 4–6 hop count 0–7 for R16, bits 3 and 7 reserved as 0), payload_len (2), crc32 (4), then salt (16) and iv (12) only when locked. That is 37 bytes at most.
+**Manifest body** (inside the whitened part): total_frames (1), kind (1: 0 text, 1 contact, 2 location, 3 notice, 4 file), flags (1: bit0 compressed, bit1 locked, bit2 broadcast), payload_len (2), crc32 (4), then salt (16) and iv (12) only when locked. That is 37 bytes at most.
 
 **Send order:** serialise → compress (only if smaller) → lock (if passphrase) → CRC-32 → split. The receiver reverses it.
 
@@ -80,13 +80,26 @@ Lab result with this design at FAST speed: 4 of 585 pattern frames failed with t
 - **Broadcast carousel (v1 default).** Play the manifest and all data frames, then repeat the cycle 3 times. Receivers collect until every `seq` has arrived. No back channel, unlimited listeners.
   - Simulation (`docs/research/carousel-sim.md`, Nov 20): a listener who joins anywhere in cycle 1, even mid-frame, had every frame by the end of cycle 2 (79/79 mid-frame joins), with 0 wrong bytes. Gaps of 0 to 600 ms all worked; keep 300 ms for real speakers and mic gain.
   - Room echo: FAST was clean up to RT60 0.8 s and NORMAL up to 1.0 s; **FASTEST already failed at 0.5 s**, so FASTEST is never used for room broadcast. In a very echoey hall, extra cycles don't help a phone stuck in an echo null; moving the phone 15 to 30 cm or switching to NORMAL does.
-- **Relay (R16).** A phone that completed a message keeps its payload bytes (ciphertext if locked), its message_id and manifest fields. Relay calls `splitPayload` with the same `messageId`, the same flags and `hop + 1`, then plays the carousel like any broadcast. Receivers that already have the message drop it with the replay guard, so a relay never shows twice. The hop count lives in the clear manifest, outside the CRC-32 (which covers the payload only), so a relay phone can raise it without the passphrase. Receivers built before the hop field read those bits as 0, because unknown flag bits are already ignored. Relays are started by a human tap, never automatically, so two relays don't play over each other in one room.
-- **Bridges.** Relay works across any channel that carries a voice: hold the relaying phone to a walkie-talkie, a PA microphone or a phone call, and the far end decodes the same bytes.
 - **Duplex repair (stretch).** The receiver plays a repair-request frame listing missing seq numbers; the sender replays only those.
 
-- **Call mode (candidate, see 04-prd.md).** Same frames, sent with ggwave's low-frequency `DT_FASTEST` protocol (1.08 to 2.63 kHz) at volume 50, which fits inside a phone call's 300 to 3,400 Hz band. About 9.8 s per 100 B. Lab codec results: `docs/research/codec-sim.md`.
 
-**Air time (lab, Nov 20):** a 100-character text is one manifest frame plus one data frame, about 9 s per cycle at FAST and about 5 s at FASTEST. Broadcast repeats 3 cycles. A 500-character notice is 5 data frames, about 40 s per cycle at FAST, which is why v1 stays short.
+## Game messages (Séance)
+
+All game messages are ordinary Wail payloads (kind 0, broadcast flag set), so they get the carousel, CRC-32 and replay guard for free. The first byte of the payload is the game message type.
+
+| Type | Sent by | Body | Size |
+| --- | --- | --- | --- |
+| join | Player, once | player public key (ECDH P-256, raw, 65 B) | 66 B: 1 frame |
+| possession | Host | game id (2), host public key (65), player count, then per player: key fingerprint (first 4 B of SHA-256 of the player key) + AES-GCM(role and possessed partner, 2 B) + tag (16) | about 70 + 22 per player: 160–250 B, 2–3 frames |
+| omen | Host | game id, round, per living player: fingerprint + AES-GCM(clue, about 3 B) + tag | up to about 200 B |
+| reveal | Host | game id, banished candle, role (in the clear: it is public now) | 1 frame |
+| end | Host | game id, winner, every role in the clear | 1 frame |
+
+- **Keys:** each side derives a per-player AES-GCM-256 key with ECDH (host private key + player public key) and HKDF-SHA-256. The IV is built from game id, round and candle number, so it never repeats under one key and needs no bytes on the air. Keys are non-extractable and live in memory for one game.
+- **Which part is mine:** a phone finds its entry by its key fingerprint, and its candle number is the entry's position.
+- **Join chirps** are a single FAST frame (about 4 s). The host decodes one at a time; two chirps at once garble and both players retry.
+
+**Air time (lab, Nov 20):** a 100-character text is one manifest frame plus one data frame, about 9 s per cycle at FAST and about 5 s at FASTEST. Broadcast repeats 3 cycles. A possession message for 8 players is 3 data frames, about 25 s per cycle at FAST.
 
 ## Data design (on the device)
 
@@ -94,25 +107,22 @@ IndexedDB database `wail`, version 1:
 
 | Store | Key | Fields | Notes |
 | --- | --- | --- | --- |
-| messages | id (UUID) | direction, kind, body (JSON), group_id (null if none), hop, locked, locked_payload (bytes, kept until unlocked), status, created_at, air_time_ms, frame_count | Index on created_at. `locked_payload` holds the received ciphertext with its salt and IV so R7's unlock-later works |
 | transfers | message_id | total_frames, received (seq list), frames (seq → bytes), first_seen_at, last_seen_at | Deleted on success or 10 min after the last frame |
-| groups | id (UUID) | name, created_at | R17. The passphrase is never stored; it is asked once per app session and kept in memory |
-| settings | key | value | Volume, speed, calm mode, display name (sent inside group messages). Never a passphrase |
-| diagnostics | auto id | run_at, channel, distance_label, attempts, successes, avg_snr | Field-test log |
+| settings | key | value | Volume, speed, calm mode. No game state is stored: a game lives in memory only |
 
-Passphrases and keys live in memory only. When a locked message arrives, the receiver tries each group unlocked in this session (PBKDF2 per try, a few hundred ms on a phone); if none fits, it stays "Locked message" in history (R7).
+Keys live in memory only, for one game.
 
 ## Security
 
 | Threat | Answer |
 | --- | --- |
-| Eavesdropping | Optional lock: PBKDF2-SHA-256 (310,000 iterations, 16-byte salt per message) → AES-GCM-256 |
+| Reading another player's role | ECDH per player + AES-GCM; a phone listening to joins hears only public keys |
+| Eavesdropping (engine lock, not used by the game UI) | PBKDF2-SHA-256 (310,000 iterations, 16-byte salt per message) → AES-GCM-256 |
 | Tampering | AES-GCM tag on locked messages; CRC-32 on all (accidents only), so unlocked messages show "unverified sender" |
 | Replay | message_id ignored if completed in the last 10 minutes (R13) |
-| Fake sender in a group | The sender name is written by the sender; anyone with the group passphrase can claim any name. The UI shows "member of <group>", not a verified identity |
-| Relay reads a private message | It can't: a relay carries the locked bytes as they are and never needs the passphrase |
 | Data leaks | No backend, CSP blocks outside calls, no analytics |
-| Mic left on | Capture only on the Listen screen, with an indicator |
+| A fake host | Out of scope: players are in the same room and can see who the host is |
+| Mic left on | Capture only while the host is summoning or a player is waiting for the ghost, with an indicator |
 
 Limit stated in the README: Wail hides *what* was said when locked, not *that* a transmission happened.
 
@@ -132,6 +142,11 @@ Limit stated in the README: Wail hides *what* was said when locked, not *that* a
 | P8 | Whitening twice with the same salt returns the original frame | R3 |
 | P9 | Any corrupted frame (one or more bytes changed) fails its CRC-16 and is dropped | R4 |
 | P10 | No built frame is shorter than 12 or longer than 128 bytes | R1 |
+| G1 | For any player count 4–8 and seed: exactly the right number of Possessed, never 0 | R22 |
+| G2 | Every clue given to a Living player is true | R23 |
+| G3 | Each phone decrypts its own role and fails cleanly on every other entry | R21, R22 |
+| G4 | Any sequence of banishments ends the game, and the winner matches the rules | R25 |
+| G5 | A late joiner still gets the possession message on the next cycle | R5, R22 |
 
 **Noise suite (Node):** ggwave encodes a frame, we add white noise and echo at fixed SNR levels, decode, and record the success rate per level. CI fails if it drops below the baseline.
 
@@ -141,16 +156,10 @@ Limit stated in the README: Wail hides *what* was said when locked, not *that* a
 
 | Sender | Receiver | Channel | Distances | Tries each |
 | --- | --- | --- | --- | --- |
-| iQOO Neo 6 (Chrome) | Laptop (Chrome) | Air | 0.5 m, 1 m, 3 m | 20 |
-| Laptop | iQOO Neo 6 | Air | 0.5 m, 1 m, 3 m | 20 |
-| iQOO Neo 6 | Vivo P27 | Air | 1 m, 3 m | 20 |
-| Vivo P27 | Samsung (father's) | Air | 1 m, 3 m | 20 |
-| iQOO Neo 6 | Vivo P27 + Samsung + laptop at once | Broadcast via speaker | 3 m, 6 m | 10 |
-| iQOO Neo 6 | Laptop | Bluetooth speaker | 3 m, 6 m | 10 |
-| iQOO Neo 6 | Vivo P27 | WhatsApp call, normal call | n/a | 10 |
-| Laptop → iQOO (relay, next room) → Samsung | Relay chain, 2 hops | Air, doors closed between rooms | 3 m per hop | 10 |
-| Relay phone into a call → far phone on speaker → listener | Relay over a call (hop 3) | Normal call, DT_FASTEST | n/a | 10 |
-| Phone → walkie-talkie → walkie-talkie → phone *(optional, if bought)* | Radio bridge | Licence-free walkie-talkies | 100 m, 500 m | 10 |
+| iQOO Neo 6, Vivo P27, Samsung (players) | Laptop (host) | Join chirps, one after another | 1 m, 2 m | 10 each |
+| Laptop (host, on its speaker) | 3–4 phones at once | Possession broadcast, quiet room | 2 m, 4 m | 10 games |
+| Laptop (host) | 3–4 phones at once | Possession broadcast, people talking | 2 m | 10 games |
+| Laptop | Laptop (Play alone) | In memory, no mic | n/a | 10 |
 
 ## Deployment
 

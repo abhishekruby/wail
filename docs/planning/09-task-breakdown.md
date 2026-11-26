@@ -2,6 +2,25 @@
 
 Stage status: ready (Nov 20, 2026). Estimates are focused hours. Internal submit deadline: **Dec 3, 11:00 PM IST**. Official deadline: Dec 4, 2:00 PM PT = Dec 5, 3:30 AM IST.
 
+## Séance plan (Nov 26): this replaces the schedules below
+
+Approved Nov 26: Wail becomes Séance, a party game played through sound (`11-seance-game-design.md`, PRD v2.0). Engine specs 01, 02 and 03 are built (86 tests). Credits: about 6 left on Kiro Free, 50 more on Dec 1, hackathon code not yet received. All Kiro runs use the CLI with `claude-haiku-4.5` (about 0.5 credits per task, about 4 per spec plan).
+
+| Day | Kiro (product) | Abhishek | Claude Code |
+| --- | --- | --- | --- |
+| Thu Nov 26 | Prompt 6: spec 10-game plan, then its first pure-rules tasks while credits last | Read the plan | Review every stage, run tests, commit |
+| Fri Nov 27 – Mon Nov 30 | Continue only if credits arrive (hackathon code, or Abhishek's own choice of Kiro Pro) | Phone check: does `crypto.subtle` ECDH work on iQOO, Vivo, Samsung (test page from Claude Code) | Field-test pages in `spikes/`: join chirp and 4-phone broadcast; README; Vercel setup |
+| Tue Dec 1 | 50 free credits: prompt 7 (key exchange), prompt 8 (broadcast), prompt 9 (UI + Play alone), PWA | First real game with family, 4 phones | Review, deploy, field-test log |
+| Wed Dec 2 | Bug fixes only; **feature freeze 12:00 IST** | Record the video in the evening | Write-up, Devpost text |
+| Thu Dec 3 | | Social post, submit by 11 PM IST | Check every link in a private window |
+
+**Scope priority if credits run out:**
+1. Must: join + possession + reveal (R20–R22, R24, R25), Play alone (R26), hold-to-reveal (R27), live URL, video.
+2. Should: omens with clues (R23), haunted visuals (candles, level meter), offline PWA.
+3. Could: Kiro Crew app, waterfall spectrogram, sound effects.
+
+The schedules and phases below are kept as history. Where they mention cards, Compose, Crypt, history, relay, groups or call mode, they are superseded.
+
 ## Revised schedule (Nov 25): 9 days left, credits not yet received
 
 Status on Nov 25: ID check passed (Devpost page: "allow 3 business days"), no credit code yet; reminder email drafted. Kiro account is on Kiro Free (0 / 50 credits, resets Dec 1); the code goes in **Settings → Account & plan → Promo code**. Kiro IDE not yet installed. Kill test not yet run. Phase 1 is 3 days late.
@@ -14,7 +33,7 @@ Status on Nov 25: ID check passed (Devpost page: "allow 3 business days"), no cr
 | Thu Nov 26 | Spec 02 tasks; spec 03 crypto | Kill test if not done | Review Kiro's protocol code vs steering | Run tests, review, commit |
 | Fri Nov 27 | Spec 01 modem core; hooks; custom agent | Phone test of first send/receive | Second review | Field-log, CI |
 | Sat Nov 28 | Specs 04 cards + 08 UI: Séance, Compose, solo demo | Real-device check | Accessibility check of the UI | Review, fix-plans for Kiro |
-| Sun Nov 29 | Broadcast carousel + Relay (05), history (06), Groups (09) | Broadcast test with 3 phones; relay chain across 2 rooms | | Deploy to Vercel |
+| Sun Nov 29 | Broadcast carousel (05), history (06) | Broadcast test with 3 phones | | Deploy to Vercel |
 | Mon Nov 30 | PWA offline (07), polish; Crew app only if credits came by Nov 27 | | | Offline test, Lighthouse |
 | Tue Dec 1 | Bug fixes only | Field tests (matrix in 06) | Fill README results | **Feature freeze** |
 | Wed Dec 2 | | Record video, voiceover | Captions, thumbnail | Kiro write-up, edit check |
@@ -24,11 +43,9 @@ Status on Nov 25: ID check passed (Devpost page: "allow 3 business days"), no cr
 
 **If no code by Nov 30:** finish only the must-haves below on the free credits (50 now, 50 more on Dec 1). Buying a Kiro Pro plan is Abhishek's own decision; the plan page lists it at $20/month with 500 trial credits on first upgrade.
 
-**Added Nov 25: Relay (R16) and Groups (R17).** The radio-check test showed that sound alone covers about one room, so the headline becomes "the message travels": relay hops, plus calls and walkie-talkies as bridges. Both are small on top of what is built: Relay reuses `splitPayload` (it already takes `messageId`) plus a hop field; Groups reuse spec 03 lock/unlock. Kiro prompts 6 to 8 in `docs/kiro-prompts.md`.
-
 **Scope priority if credits are short:**
-1. Must: broadcast of text + notice card, CRC-checked receive, **Relay with hop count**, solo demo, haunted Séance screen, offline PWA, live URL, video.
-2. Should: **Groups** (locked messages with a chat thread per group), location and contact cards, history (Crypt).
+1. Must: broadcast of text + notice card, CRC-checked receive, solo demo, haunted Séance screen, offline PWA, live URL, video.
+2. Should: locked messages, location and contact cards, history (Crypt).
 3. Could: call mode, Kiro Crew app (`wail-nightwatch`), waterfall spectrogram (fall back to a simple level meter).
 
 ## Phase 0 · Nov 21 · Setup and kill test (≈ 5 h)
@@ -76,9 +93,6 @@ Status on Nov 25: ID check passed (Devpost page: "allow 3 business days"), no cr
 - [ ] T3.4 PWA: manifest, icons, precache, offline reload test · 2 h
 - [ ] T3.5 CSP header, Vercel deploy, HTTPS check on phone · 1.5 h
 - [ ] T3.6 Accessibility pass: contrast, focus, reduced motion · 1 h
-- [ ] T3.7 In Kiro: update spec 02 with the hop field (prompt 6), then Relay in spec 05 (prompt 7) · 2 h
-- [ ] T3.8 In Kiro: spec 09-groups (prompt 8): group store, unlock once per session, thread view · 2.5 h
-- [ ] T3.9 Relay chain test: 2 rooms, then a hop into a phone call; walkie-talkie row only if bought · 1 h
 
 ## Phase 4 · Nov 30 to Dec 1 · Crew app and field tests (≈ 10 h)
 

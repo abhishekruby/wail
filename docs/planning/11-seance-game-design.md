@@ -1,6 +1,6 @@
 # 11 · Wail: Séance (game design, draft for Abhishek's OK)
 
-Status: draft, Nov 26, 2026. Nothing in 04, 06, 09 or 10 changes until Abhishek approves this page.
+Status: **approved by Abhishek, Nov 26, 2026.** PRD v2.0, 06, 09 and 10 now follow this page.
 
 ## One line
 
@@ -67,7 +67,7 @@ Fallback if time runs short: seat numbers plus a shared game seed (honour system
 | --- | --- |
 | Noisy party room, people talking | Test with 4 phones in one room while people talk; the ghost repeats each message 3 cycles |
 | Joining one by one takes time (about 5 s each) | Fine for 4–8 players; treat it as the ritual |
-| The possession message for 8 players is about 200 bytes (2 data frames), about 15–20 s per cycle | Fine as a ritual; keep per-player parts small (role + tag) and send the host key once |
+| The possession message for 8 players is about 250 bytes (3 data frames), about 25 s per cycle at FAST | Fine as a ritual; keep per-player parts small (role + tag) and send the host key once |
 | Two phones answer at once | The host ignores garbled chirps; the player sees "The ghost didn't hear you, try again" |
 | Credits | About 30 Kiro credits with Haiku in the CLI: game spec, key-exchange update, UI, solo demo. Free credits (about 6 now, 50 on Dec 1) are tight, so the hackathon code still matters |
 

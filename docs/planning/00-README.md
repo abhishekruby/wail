@@ -14,7 +14,10 @@ Everything decided before development starts, in the order it was done. Read top
 | 08 | Project rules | [08-project-rules.md](08-project-rules.md) | Done |
 | 09 | Task breakdown | [09-task-breakdown.md](09-task-breakdown.md) | Ready |
 | 10 | Submission plan | [10-submission-plan.md](10-submission-plan.md) | Ready |
+| 11 | Séance game design (new direction) | [11-seance-game-design.md](11-seance-game-design.md) | Approved Nov 26 |
 
 **Revised Nov 20** after two outside checks in [`docs/research/`](../research/): an offline phone-codec simulation and a judge-style review. Main changes: broadcast is the headline, Nedagram is named as prior art, a solo demo and a call-mode decision rule were added, the dim text colour was fixed, and the Crew app starts earlier.
 
-**Next step:** Phase 0 in 09-task-breakdown.md, starting with the kill test on Nov 21.
+**Changed Nov 26:** Wail became Séance, a party game played through sound. 04 (PRD v2.0), 06, 09 (top section) and 10 follow 11. Files 01–03 still describe the earlier disaster-broadcast idea and are kept as history.
+
+**Next step:** Kiro prompt 6 in `docs/kiro-prompts.md` (spec 10-game).

@@ -4,7 +4,7 @@ Context for Claude Code. Read this first, then `docs/planning/00-README.md`.
 
 ## What this is
 
-Wail: an offline web app that sends short messages between devices as sound (ggwave). Entry for Kiroween 2026, category Resurrection. Deadline we work to: Dec 3, 2026, 11:00 PM IST.
+Wail: Séance, a Halloween party game where a host's speaker ("the ghost") sends secret roles and clues to every phone in the room as sound (ggwave), with no internet. Design: `docs/planning/11-seance-game-design.md`. Entry for Kiroween 2026, category Resurrection. Deadline we work to: Dec 3, 2026, 11:00 PM IST.
 
 ## Your role here: helper, not builder
 
@@ -35,4 +35,4 @@ npm run build
 
 ## Current phase
 
-Phase 0 (Nov 21) in `docs/planning/09-task-breakdown.md`: move `docs/setup/ci.yml` to `.github/workflows/ci.yml`, first commit and push, then the kill test (`/spikes/kill-test.html`) on laptop, iQOO Neo 6, Vivo P27 and Samsung. Results go in `docs/field-tests.md`.
+Séance plan in `docs/planning/09-task-breakdown.md` (top section). Engine specs 01–03 are built. Next Kiro prompts: 6 to 10 in `docs/kiro-prompts.md`.

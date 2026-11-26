@@ -1,84 +1,54 @@
 # 04 · Product requirements (PRD)
 
-Stage status: done (Nov 20, 2026) · Owner: Abhishek · Version 1.2 (Nov 25: Relay and Groups added so a message travels beyond one room; v1.1 Nov 20: broadcast made the headline, solo demo added, call mode rule added, after `docs/research/judge-review.md` and `docs/research/codec-sim.md`)
+Stage status: done · Owner: Abhishek · **Version 2.0 (Nov 26, 2026): Wail becomes Séance, a party game played through sound.** Approved design: `docs/planning/11-seance-game-design.md`. v1.x (Nov 20–25) was a disaster-broadcast app; the radio check showed one-room range and slow, eerie sound, which are weak for a disaster tool and right for a room game. The engine (specs 01, 02, 03) is unchanged.
 
 ## 1. Summary
 
-Wail is an offline web app that broadcasts short messages, contact cards, locations and notices as sound, from one device to every device in earshot. Category for Kiroween 2026: **Resurrection**.
+Wail: Séance is a Halloween party game where a "ghost" speaks to every phone in the room through sound. The host's laptop or phone on a speaker is the ghost. Players open a link: no app, no Wi-Fi, no join code, no internet. The ghost's modem screech hands out secret roles, whispers private clues and reveals who was possessed. Category for Kiroween 2026: **Resurrection** (the 1990s dial-up modem, brought back as the voice of a ghost).
 
-**What sets it apart.** One-to-one text over sound already exists (Nedagram, Waver). Wail's headline is **one-to-many broadcast**: one phone on a loudspeaker, a room of receivers, and late joiners still get the whole message on a later cycle. It carries structured crisis cards for non-technical people and publishes measured reliability.
-
-**How a message travels beyond one room.** Sound alone covers a room or a hall. Wail goes further in two ways:
-- **Relay:** any phone that received a message can play it again with one tap. The message hops phone to phone and room to room, exactly as sent, and the screen shows the hop count. A relay phone carries a locked message without being able to read it.
-- **Any voice channel is a bridge:** a phone call (any distance, even 2G with no data), a walkie-talkie (kilometres, no towers), a PA or community radio. Wail turns each into a channel for exact text.
-
-**Groups** make it feel like a chat: a group is a name and a shared passphrase. Everyone in earshot hears the sound, but only members can read it, and each group has its own thread.
+**What sets it apart.** Phone party games today need internet, a shared screen and a room code. Séance needs only sound. Secret roles travel on a public channel (everyone hears the same sound) and stay secret, because every phone makes its own key when it joins.
 
 ## 2. Goals
 
 **v1 must ship (by Dec 1 feature freeze)**
 
-1. **Broadcast mode (the headline):** one sender, any number of receivers, no pairing; a receiver that starts mid-message completes it on the next cycle.
-2. Text up to 500 characters, through the air.
-3. Cards: contact, location (lat/long), notice (title, time, place).
-4. Optional lock with a spoken passphrase; a locked message stays in history and can be unlocked later.
-5. Fully offline after first load (installable PWA).
-6. Haunted modem UI with a live waterfall spectrogram, chunk progress and a calm mode.
-7. **Relay (R16):** one tap re-broadcasts a received message, locked or not, with its hop count raised by one.
-8. **Groups (R17):** named groups with a shared passphrase and a chat-style thread per group.
-9. **Solo demo:** a judge alone on one laptop can tap "Try it on this device" on the home screen and watch a built-in sample decode through the real decoder, with no second device and no microphone.
+1. **Summon and join (R20, R21):** a host starts a séance; 4 to 8 players join one at a time by playing a short chirp; each player gets a candle number and a spooky name.
+2. **Secret roles over sound (R22):** one broadcast gives every phone its own role, readable only on that phone.
+3. **Rounds (R23, R24, R25):** private clues each round, banish, reveal by sound, win check.
+4. **Play alone (R26):** a judge on one laptop plays against 3 bots through the real modem and decoder, no microphone, under a minute.
+5. Haunted modem UI (candle circle, waterfall or level meter, calm mode) and an offline PWA.
 
-**Call mode: promote to v1 if the Nov 21 kill test passes**
+**Stretch (only after the freeze checklist passes):** a second game mode, sound effects packs, more than 8 players.
 
-- Lab result (`docs/research/codec-sim.md`): ggwave's low-frequency protocol `DT_FASTEST` at volume 50 passed 10/10 through AMR-NB, AMR-WB and Opus; our default AUDIBLE speeds failed AMR-NB 0/10.
-- Rule: if the WhatsApp row or the normal-call row of the kill test reaches 7/10 or better using `DT_FASTEST` at volume 50, call mode joins v1 as R15. Otherwise it stays a stretch goal and the video says so.
-- The kill-test page only offers AUDIBLE speeds today, so DT_FASTEST and a volume control must be added to `spikes/kill-test.html` before the call rows are run.
-
-**Stretch (only after the freeze checklist passes)**
-
-- Call mode, if the rule above was not met.
-- Duplex repair: the receiver plays back which chunks it missed.
-- Files up to 2 KB.
-- A single-file HTML build that can be shared offline over Bluetooth (to verify: mic access from a local file).
-
-**Non-goals:** images, video, accounts, a server, automatic mesh routing (relays are a human tap, so two phones never talk over each other), Bluetooth or Wi-Fi mesh (browsers can't do phone-to-phone radio), ultrasound.
+**Non-goals:** accounts, servers, internet play, voice chat, players sending game moves back to the host by sound after joining (votes happen out loud and the host taps them in).
 
 ## 3. Success metrics
 
 | Metric | Target |
 | --- | --- |
-| Delivery success, 100-byte message, 1 m, quiet room | ≥ 95% of 20 tries |
-| Delivery success, same message, 3 m, normal room noise | ≥ 80% of 20 tries |
-| New user: open app to first message received | < 30 s |
-| Property-based cases per property per CI run | ≥ 1,000 |
-| Broadcast: receivers in one room completing the same message | 3 devices, ≥ 8 of 10 cycles each, 3 m from the speaker |
-| Solo demo: home screen to decoded sample on one laptop | < 15 s |
-| Relay chain: message exact after 3 hops (room → next room → phone call or walkie-talkie) | ≥ 8 of 10 |
-| Kiro Crew nightly torture runs before submission | ≥ 5 (first run by Nov 24, T1.9) |
+| Join: player chirp heard by the host at 1–2 m | ≥ 9 of 10 |
+| Roles: 4 phones in one room all get their role in the first or second cycle, people talking | ≥ 8 of 10 games |
+| Wrong role ever shown | 0 |
+| Play alone: home screen to the first role reveal on one laptop | < 60 s |
+| A full game with 5 players | 10 to 15 min |
+| Property-based cases per property per CI run | ≥ 200 for game rules, ≥ 1,000 for pure protocol |
 
 ## 4. Functional requirements (EARS)
 
-Each ID becomes one Kiro spec. Kiro turns EARS acceptance criteria into property-based tests.
+**Engine (already built in specs 01–03; unchanged):** R1 start playing within 1 s · R2 decode from the mic · R3 CRC-32 check before showing · R4 never show partial or altered data · R5 repeat the frame cycle 3 times (spec 05) · R6, R7 passphrase lock and clean failure (spec 03; kept in the engine, not in the game UI) · R10 listening indicator, stop the mic when leaving · R11 runs offline after the first visit (spec 07) · R13 replay guard.
+
+**Game:**
 
 | ID | Requirement | Kiro spec |
 | --- | --- | --- |
-| R1 | WHEN the user taps Wail with a message, THE SYSTEM SHALL start playing the encoded message within 1 s. | 02-packet-protocol |
-| R2 | WHILE listening, THE SYSTEM SHALL decode Wail frames from the microphone and show a complete message within 1 s of its last frame. | 01-modem-core |
-| R3 | WHEN all frames of a message arrive, THE SYSTEM SHALL verify its CRC-32 and show it only if the check passes. | 02-packet-protocol |
-| R4 | IF a frame is missing or corrupt, THEN THE SYSTEM SHALL keep waiting for repeats and SHALL NOT show partial or altered text. | 02-packet-protocol |
-| R5 | WHEN broadcast is on, THE SYSTEM SHALL repeat the full frame cycle 3 times or until the sender stops. | 05-broadcast |
-| R6 | WHEN a passphrase is set, THE SYSTEM SHALL encrypt the payload before encoding, and only a receiver with the same passphrase SHALL see the text. | 03-crypto |
-| R7 | IF decryption fails, THEN THE SYSTEM SHALL show "Locked message", SHALL NOT show ciphertext as text, and SHALL keep the locked payload in history so the user can enter the passphrase later. | 03-crypto |
-| R8 | WHEN the user picks a card (contact, location, notice), THE SYSTEM SHALL serialise it compactly and render it as a card on receive. | 04-cards |
-| R9 | WHEN a message is sent or received, THE SYSTEM SHALL save it to on-device history with time, direction and status. | 06-storage |
-| R10 | WHILE the microphone is on, THE SYSTEM SHALL show a listening indicator, and SHALL stop capture when the user leaves the Listen screen. | 01-modem-core |
-| R11 | WHEN offline after the first visit, THE SYSTEM SHALL load and run fully from cache. | 07-pwa-offline |
-| R12 | WHEN a message arrives, THE SYSTEM SHALL also vibrate (where supported) and show it as text. | 08-haunted-ui |
-| R13 | IF the same message_id was already completed in the last 10 minutes, THEN THE SYSTEM SHALL not show it again. | 02-packet-protocol |
-| R14 | WHEN the user taps "Try it on this device", THE SYSTEM SHALL decode a built-in sample recording through the real ggwave decoder, with the live spectrogram, and show the message within 15 s, without needing a microphone. | 08-haunted-ui |
-| R16 | WHEN the user taps Relay on a received message, THE SYSTEM SHALL broadcast it again with the same message_id and the same payload bytes (still locked if it was locked, no passphrase needed), new salts, and the hop count raised by one; IF the hop count is already 7, THEN THE SYSTEM SHALL disable Relay. Every received message SHALL show its hop count. | 02-packet-protocol (hop field), 05-broadcast |
-| R17 | WHERE the user has created a group (name + passphrase), THE SYSTEM SHALL lock messages sent to that group with its passphrase, SHALL show each received message that unlocks with it in that group's thread in time order with the sender name written inside the message, and SHALL keep the passphrase in memory only (asked once per app session). | 09-groups |
-| R15 | *(only if call mode is promoted)* WHERE call mode is selected, THE SYSTEM SHALL send with the low-frequency protocol and volume set in `.kiro/steering/protocol.md`, and the receiver SHALL decode it without the user picking a mode. | 01-modem-core |
+| R20 | WHEN the host taps Summon, THE SYSTEM SHALL start listening for join chirps and show an empty candle circle; WHEN a valid join chirp arrives, THE SYSTEM SHALL light the next candle (up to 8) and ignore repeats of the same chirp. | 10-game, 08-haunted-ui |
+| R21 | WHEN a player taps Answer, THE SYSTEM SHALL create a new ECDH P-256 key pair, play one join frame carrying its public key, and show the player's candle number and spooky name once the host's possession broadcast lists that key. IF no possession broadcast lists it within 60 s, THEN THE SYSTEM SHALL say "The ghost didn't hear you, try again". | 03-crypto (update), 10-game |
+| R22 | WHEN the host taps Begin with 4 to 8 players, THE SYSTEM SHALL assign roles (1 Possessed for 4–5 players, 2 for 6–8), and broadcast one possession message that holds, for each player, their role encrypted with AES-GCM under the key shared with that player; each phone SHALL show only its own role, and a Possessed player SHALL also see the other Possessed candle. | 10-game, 05-broadcast |
+| R23 | WHEN the host starts a round, THE SYSTEM SHALL broadcast an omen with one private clue per living player, encrypted the same way: a true clue for Living players and a believable false clue for Possessed players. | 10-game |
+| R24 | WHEN the host taps the banished candle, THE SYSTEM SHALL broadcast the reveal, and every phone SHALL show whether that player was Living or Possessed. | 10-game |
+| R25 | WHEN all Possessed are banished, or the Possessed equal the Living, THE SYSTEM SHALL broadcast the end and every phone SHALL show the winner and every role. | 10-game |
+| R26 | WHEN the user taps Play alone, THE SYSTEM SHALL run the host and 3 bot players on one device, passing the real modem waveform from encoder to decoder in memory, with the haunted UI, and need no microphone. | 08-haunted-ui |
+| R27 | WHILE a role or clue is on screen, THE SYSTEM SHALL show it only while the player's finger is held down, and SHALL vibrate (where supported) when a new one arrives. | 08-haunted-ui |
 
 ## 5. Non-functional requirements
 
@@ -87,29 +57,27 @@ Each ID becomes one Kiro spec. Kiro turns EARS acceptance criteria into property
 | Offline | No network calls after load; CSP `connect-src 'self'` |
 | Browsers | Android Chrome (primary), desktop Chrome, iOS Safari 16.4+ (best effort) |
 | Size | First load < 400 KB gzipped including ggwave WASM |
-| Privacy | No analytics, no accounts, no third-party scripts |
-| Accessibility | WCAG 2.1 AA contrast: every text colour ≥ 4.5:1 on its background (measured, see 07); keyboard reachable, text for every sound event, calm mode |
+| Privacy | No analytics, no accounts, no third-party scripts. Keys live in memory for one game only |
+| Accessibility | WCAG 2.1 AA contrast, keyboard reachable, text for every sound event, calm mode (no flashing) |
 | Reliability | Every audio error (no permission, device busy) shown as plain words |
 | Licence | MIT, visible in the GitHub About section |
 
 ## 6. Out of scope for v1
 
-Accounts, servers, sync, contacts directory, read receipts, delivery confirmation, group member lists (a group is just its passphrase), translations beyond English.
+Internet play, accounts, saved games, chat, voting by sound, translations beyond English. (Dropped from v1.x: cards, history, groups, relay, call mode.)
 
 ## 7. Release criteria (Dec 1 freeze checklist)
 
-- [ ] R1 to R14, R16 and R17 pass their tests (R15 too if call mode was promoted)
-- [ ] Solo demo works on a fresh laptop with no microphone permission granted
-- [ ] README names Nedagram, Waver and ggwave as prior art
-- [ ] Property suites P1 to P7 green, noise suite at baseline
+- [ ] R1–R5, R10, R11, R13 and R20–R27 pass their tests
+- [ ] Play alone works on a fresh laptop with no microphone permission
+- [ ] One real game with 4+ phones in one room, recorded for the video
+- [ ] Property suites green (protocol P1–P10, game G1–G5)
 - [ ] Field-test table filled with real numbers
 - [ ] Lighthouse PWA installable, offline reload works
 - [ ] Live on Vercel over HTTPS
+- [ ] README names prior art (ggwave, Chirp, Nedagram, Waver; phone party games that need internet)
 
 ## 8. Open questions
 
-- ~~Is India eligible?~~ Checked Nov 20: India is not on the excluded list in the official rules.
-- ~~What is ggwave's real payload limit?~~ Answered Nov 20: 140 bytes per transmission, longer input silently truncated. Wail uses 128-byte frames.
-- Does the signal survive real rooms and phone calls? Partly answered Nov 20 by the offline codec simulation (call mode needs `DT_FASTEST` at volume 50); real rooms and calls decided by the Nov 21 kill test.
-- ~~Which second phone?~~ Test devices: iQOO Neo 6 (own), Vivo P27 (mother's), Samsung (father's), Lenovo laptop.
-- Not eligible for Ghost of Kiroween Past (first Kiroween).
+- Join chirp reliability with 4+ phones answering one after another in a noisy room: measure in the first real-room test.
+- Does Web Crypto ECDH P-256 work on the test phones' Chrome? (Expected yes; check on iQOO, Vivo, Samsung.)
