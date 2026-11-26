@@ -34,6 +34,7 @@ During development (Kiro):
 | Property | Failure Kiro found | Shrunk input | Fix |
 | --- | --- | --- | --- |
 | P10 manifest round-trip (`tests/protocol/R8.manifest-round-trip.prop.test.ts`, Nov 25) | `parseManifest` read the 32-bit CRC with `<< 24`, which JavaScript turns into a signed number. About half of all real CRC-32 values have the top bit set, so the receiver would have rejected roughly every second message as corrupt. Failed after 2 runs. | `crc32: 2147483648` (2³¹), shrunk 24 times | `decodeU32LE(...) >>> 0` in `src/protocol/manifest.ts` |
+| Modem round-trip (`tests/modem/R2.ggwave-round-trip.prop.test.ts`, Nov 26) | Failed at random: real ggwave never decodes some whitened frames on one particular salt (2 of 256 salts at NORMAL for one body). The test demanded first-try decode; the product resalts every repeat | body `[239,213,1,114,169,202,32,200,168,219]`, salt 38 | Kiro CLI rewrote the property to "one of 3 salts decodes, never wrong bytes" and added a regression test; Claude Code then tightened the byte check (frames decoded during trailing silence and length mismatches now count) |
 
 ## Kiro powers and third-party tools
 

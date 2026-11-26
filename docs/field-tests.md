@@ -60,6 +60,17 @@ ggwave decodes only when `decode` receives exactly `samplesPerFrame` samples (1,
 
 The browser's AudioWorklet delivers 128-sample blocks, so `GgwaveModem.feed` buffers and hands ggwave exact 1,024-sample chunks.
 
+## Whitened frames that never decode on one salt (Nov 26, 2026, Node, ggwave 0.4.0, 48 kHz, volume 10)
+
+The modem round-trip property tests failed at random (about one run in three). Cause: some whitened frames never decode with one particular salt, every time. Example body `[239,213,1,114,169,202,32,200,168,219]` (data frame, seq 1), all 256 salts tried with a reset modem:
+
+| Speed | Salts that never decode | Every other salt |
+| --- | --- | --- |
+| NORMAL | 38, 156 (2 of 256) | Decodes exactly |
+| FAST | 156 (1 of 256) | Decodes exactly |
+
+No wrong bytes in any try; the failure is always "nothing decoded". This confirms the design choice of a new salt for every broadcast repeat (`resaltFrame`). The tests now assert the design (at least one of 3 salts decodes, never wrong bytes) and keep this frame as a regression test.
+
 ## Broadcast and room-echo simulation (Nov 20, 2026, offline)
 
 5 frames × 100 B, 3 cycles, +10 dB white noise, synthetic room echo, 300 ms gaps. Written by Antigravity (`spikes/carousel-sim/run.ts`), re-run by Claude Code. Full report: `docs/research/carousel-sim.md`.
